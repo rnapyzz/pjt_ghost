@@ -1,3 +1,25 @@
-fn main() {
-    println!("Hello, world!");
+use dotenvy::dotenv;
+use ghost::run;
+use tokio::net::TcpListener;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenv().ok();
+
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+    let address = "0.0.0.0:3000";
+    let listener = TcpListener::bind(address).await?;
+    tracing::info!("Server listening on {}", address);
+
+    run(listener).await?;
+
+    Ok(())
 }
