@@ -34,4 +34,21 @@ impl ProjectRepository for ProjectRepositoryImpl {
 
         Ok(project)
     }
+
+    async fn list(&self, owner_id: Uuid) -> Result<Vec<Project>> {
+        let projects = sqlx::query_as!(
+            Project,
+            r#"
+            SELECT id, name, description, owner_id
+            FROM projects
+            WHERE owner_id = $1
+            ORDER BY created_at DESC
+            "#,
+            owner_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(projects)
+    }
 }

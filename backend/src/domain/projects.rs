@@ -13,4 +13,5 @@ pub struct Project {
 #[async_trait::async_trait]
 pub trait ProjectRepository: Send + Sync {
     async fn create(&self, name: String, description: String, owner_id: Uuid) -> Result<Project>;
+    async fn list(&self, owner_id: Uuid) -> Result<Vec<Project>>;
 }
