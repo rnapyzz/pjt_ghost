@@ -144,3 +144,90 @@ async fn test_list_projects(pool: PgPool) {
     assert!(project_names.contains(&"Project A2"));
     assert!(!project_names.contains(&"Project B1"));
 }
+
+#[sqlx::test]
+async fn test_update_project(pool: PgPool) {
+    // テスト用のユーザーを2つ作成
+    let user1_id = Uuid::new_v4();
+    let user2_id = Uuid::new_v4();
+
+    sqlx::query!(
+        "INSERT INTO users (id, name) VALUES ($1, $2), ($3, $4)",
+        user1_id,
+        "User 1",
+        user2_id,
+        "User 2"
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    // テスト用のプロジェクトを作成
+    let project_id = Uuid::new_v4();
+    sqlx::query!(
+        "INSERT INTO projects (id, name, owner_id) VALUES ($1, $2, $3)",
+        project_id,
+        "Original Name",
+        user1_id
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    // テストケース1: projectのownerが更新する場合 (成功)
+    let app = create_app(pool.clone());
+    let response_ok = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri(format!("/projects/{}", project_id))
+                .method("PATCH")
+                .header("Content-Type", "application/json")
+                .header("x-user-id", user1_id.to_string())
+                .body(Body::from(
+                    r#"{
+                        "name": "Updated Name",
+                        "description": "Updated Description"
+                }"#,
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response_ok.status(), StatusCode::OK);
+
+    let updated_project = sqlx::query!("SELECT name FROM projects WHERE id = $1", project_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+    assert_eq!(updated_project.name, "Updated Name");
+
+    // テストケース2: projectのownerでない場合 (失敗)
+    let response_err = app
+        .oneshot(
+            Request::builder()
+                .uri(format!("/projects/{}", project_id))
+                .method("PATCH")
+                .header("Content-Type", "application/json")
+                .header("x-user-id", user2_id.to_string())
+                .body(Body::from(
+                    r#"{
+                        "name": "Hacked Name",
+                        "description": "Hacked Description"                    
+                    }"#,
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response_err.status(), StatusCode::NOT_FOUND);
+
+    let protected_project = sqlx::query!("SELECT name FROM projects WHERE id = $1", project_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(protected_project.name, "Updated Name");
+}

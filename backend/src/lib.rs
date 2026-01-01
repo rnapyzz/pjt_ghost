@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     Router,
-    routing::{get, post},
+    routing::{get, patch, post},
 };
 use sqlx::PgPool;
 use tokio::net::TcpListener;
@@ -15,10 +15,9 @@ pub mod domain;
 pub mod handlers;
 pub mod repositories;
 
-use crate::repositories::users::UserRepositoryImpl;
 use crate::{
     domain::{projects::ProjectRepository, users::UserRepository},
-    repositories::projects::ProjectRepositoryImpl,
+    repositories::{projects::ProjectRepositoryImpl, users::UserRepositoryImpl},
 };
 
 // DIコンテナ
@@ -50,6 +49,7 @@ pub fn create_app(pool: PgPool) -> Router {
             "/projects",
             post(handlers::projects::create_project).get(handlers::projects::list_projects),
         )
+        .route("/projects/{id}", patch(handlers::projects::update_project))
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .with_state(state)

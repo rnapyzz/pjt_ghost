@@ -51,4 +51,30 @@ impl ProjectRepository for ProjectRepositoryImpl {
 
         Ok(projects)
     }
+
+    async fn update(
+        &self,
+        id: Uuid,
+        name: String,
+        description: String,
+        owner_id: Uuid,
+    ) -> Result<Project> {
+        let project = sqlx::query_as!(
+            Project,
+            r#"
+            UPDATE projects
+            SET name = $1, description = $2, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3 AND owner_id = $4
+            RETURNING id, name, description, owner_id
+            "#,
+            name,
+            description,
+            id,
+            owner_id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(project)
+    }
 }
