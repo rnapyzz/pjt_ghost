@@ -21,4 +21,5 @@ pub trait ProjectRepository: Send + Sync {
         description: String,
         owner_id: Uuid,
     ) -> Result<Project>;
+    async fn delete(&self, id: Uuid, owner_id: Uuid) -> Result<u64>;
 }

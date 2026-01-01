@@ -231,3 +231,85 @@ async fn test_update_project(pool: PgPool) {
         .unwrap();
     assert_eq!(protected_project.name, "Updated Name");
 }
+
+#[sqlx::test]
+async fn test_delete_project(pool: PgPool) {
+    // テスト用のユーザーを2つ作成
+    let user1_id = Uuid::new_v4();
+    let user2_id = Uuid::new_v4();
+
+    sqlx::query!(
+        "INSERT INTO users (id, name) VALUES ($1, $2), ($3, $4)",
+        user1_id,
+        "User 1",
+        user2_id,
+        "User 2",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    // Projectを作成 (ownerはUser 1)
+    let project_id = Uuid::new_v4();
+    sqlx::query!(
+        "INSERT INTO projects (id, name, owner_id) VALUES ($1, $2, $3)",
+        project_id,
+        "Project to Delete",
+        user1_id
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let app = create_app(pool.clone());
+
+    // テストケース1: owner以外が削除しようとする場合 (NOT FOUND)
+    let response_err = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri(format!("/projects/{}", project_id))
+                .method("DELETE")
+                .header("x-user-id", user2_id.to_string())
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response_err.status(), StatusCode::NOT_FOUND);
+
+    // 失敗後にデータが残っていることの確認
+    let count = sqlx::query!(
+        "SELECT count(*) as count FROM projects WHERE id = $1",
+        project_id
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(count.count, Some(1));
+
+    // テストケース2: ownerが削除する (成功)
+    let response_ok = app
+        .oneshot(
+            Request::builder()
+                .uri(format!("/projects/{}", project_id))
+                .method("DELETE")
+                .header("x-user-id", user1_id.to_string())
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response_ok.status(), StatusCode::NO_CONTENT);
+
+    // データが確かに消えていることを確認
+    let count_after_delete = sqlx::query!(
+        "SELECT count(*) as count FROM projects WHERE id = $1",
+        project_id
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(count_after_delete.count, Some(0));
+}

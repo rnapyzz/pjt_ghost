@@ -108,3 +108,39 @@ pub async fn update_project(
 
     Ok(Json(project))
 }
+
+pub async fn delete_project(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    headers: HeaderMap,
+) -> Result<StatusCode, (StatusCode, String)> {
+    let user_id_value = headers.get("x-user-id").ok_or((
+        StatusCode::UNAUTHORIZED,
+        "x-user-id header required".to_string(),
+    ))?;
+
+    let user_id_str = user_id_value
+        .to_str()
+        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid header value".to_string()))?;
+
+    let user_id = Uuid::parse_str(user_id_str)
+        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid UUID format".to_string()))?;
+
+    let count = state
+        .project_repository
+        .delete(id, user_id)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to delete project: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
+
+    if count == 0 {
+        return Err((
+            StatusCode::NOT_FOUND,
+            "Project not found or permission denied".to_string(),
+        ));
+    }
+
+    Ok(StatusCode::NO_CONTENT)
+}

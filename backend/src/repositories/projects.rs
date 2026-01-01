@@ -77,4 +77,19 @@ impl ProjectRepository for ProjectRepositoryImpl {
 
         Ok(project)
     }
+
+    async fn delete(&self, id: Uuid, owner_id: Uuid) -> Result<u64> {
+        let result = sqlx::query!(
+            r#"
+            DELETE FROM projects
+            WHERE id = $1 AND owner_id = $2
+            "#,
+            id,
+            owner_id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(result.rows_affected())
+    }
 }
