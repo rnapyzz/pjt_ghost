@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, name, description, owner_id\n            FROM projects\n            WHERE owner_id = $1\n            ORDER BY created_at DESC\n            ",
+  "query": "\n            INSERT INTO projects (name, description, owner_id)\n            VALUES ($1, $2, $3)\n            RETURNING id, name, description, owner_id, created_at, updated_at\n            ",
   "describe": {
     "columns": [
       {
@@ -22,10 +22,22 @@
         "ordinal": 3,
         "name": "owner_id",
         "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
       "Left": [
+        "Text",
+        "Text",
         "Uuid"
       ]
     },
@@ -33,8 +45,10 @@
       false,
       false,
       true,
+      false,
+      false,
       false
     ]
   },
-  "hash": "e4f2d87b082e74dad72afaa3abce12410d377c473e5e9934b04797513a63c97c"
+  "hash": "3f24083be806089988441d0960d2139c86eccc2dbb30b9a94b01bac2416f4bb9"
 }
