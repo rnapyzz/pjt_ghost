@@ -155,3 +155,123 @@ async fn test_list_jobs(pool: PgPool) {
     assert!(job_names.contains(&"Job A"));
     assert!(job_names.contains(&"Job B"));
 }
+
+#[sqlx::test]
+async fn test_update_job(pool: PgPool) {
+    let user_id = Uuid::new_v4();
+    let project_id = Uuid::new_v4();
+    let job_id = Uuid::new_v4();
+
+    sqlx::query!(
+        "INSERT INTO users (id, name) VALUES ($1, $2)",
+        user_id,
+        "Test User"
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    sqlx::query!(
+        "INSERT INTO projects (id, name, owner_id) VALUES ($1, $2, $3)",
+        project_id,
+        "Test Project",
+        user_id
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    sqlx::query!(
+        "INSERT INTO jobs (id, project_id, name, description, business_model) VALUES ($1, $2, $3, $4, $5)",
+        job_id, project_id, "Test Job", "This is the description",
+        BusinessModel::Media as BusinessModel 
+    ).execute(&pool).await.unwrap();
+
+    let app = create_app(pool.clone());
+
+    let response = app.clone()
+        .oneshot(
+            Request::builder()
+            .uri(format!("/projects/{}/jobs/{}", project_id, job_id))
+            .method("PATCH")
+            .header("Content-Type", "application/json")
+            .header("x-user-id", user_id.to_string())
+            .body(Body::from(
+                r#"{
+                    "name": "New Job Name",
+                    "business_model": "saas"
+                }"#
+            )).unwrap(),
+        ).await.unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let updated_job = sqlx::query!(
+        r#"
+            SELECT name, description, business_model as "business_model: ghost::domain::jobs::BusinessModel"
+            FROM jobs
+            WHERE id = $1
+        "#, job_id
+    ).fetch_one(&pool).await.unwrap();
+
+    // name と　　business_model は変更してある
+    assert_eq!(updated_job.name, "New Job Name");
+    assert_eq!(updated_job.business_model, BusinessModel::Saas);
+    // description は変更してない
+    assert_eq!(updated_job.description, "This is the description");
+
+    // 間違ったproject_idを指定した場合 (失敗)
+    let wrong_project_id = Uuid::new_v4();
+    let response_err = app
+        .oneshot(
+            Request::builder()
+            .uri(format!("/projects/{}/jobs/{}", wrong_project_id, job_id))
+            .method("PATCH")
+            .header("Content-Type", "application/json")
+            .header("x-user-id", user_id.to_string())
+            .body(Body::from(r#"{ "name": "" }"#)).unwrap()
+        ).await.unwrap();
+    
+    assert_eq!(response_err.status(), StatusCode::NOT_FOUND);
+}
+
+#[sqlx::test]
+async fn test_delete_job(pool:PgPool) {
+    let user_id = Uuid::new_v4();
+    let project_id = Uuid::new_v4();
+    let job_id = Uuid::new_v4();
+
+    sqlx::query!(
+        "INSERT INTO users (id, name) VALUES ($1, $2)",
+        user_id, "Test User"
+    ).execute(&pool).await.unwrap();
+
+    sqlx::query!(
+        "INSERT INTO projects (id, name, owner_id) VALUES ($1, $2, $3)",
+        project_id, "Test Project", user_id,
+    ).execute(&pool).await.unwrap();
+
+    sqlx::query!(
+        "INSERT INTO jobs (id, project_id, name, business_model) VALUES ($1, $2, $3, $4)",
+        job_id, project_id, "Test Job", BusinessModel::Internal as BusinessModel
+    ).execute(&pool).await.unwrap();
+
+    let app = create_app(pool.clone());
+
+    let response = app
+    .oneshot(
+        Request::builder()
+        .uri(format!("/projects/{}/jobs/{}", project_id, job_id))
+        .method("DELETE")
+        .header("x-user-id", user_id.to_string())
+        .body(Body::empty()).unwrap()
+    ).await.unwrap();
+
+    assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+    let count = sqlx::query!(
+        "SELECT count(*) as count FROM jobs WHERE id = $1", job_id
+    ).fetch_one(&pool).await.unwrap();
+
+    assert_eq!(count.count, Some(0));
+}
