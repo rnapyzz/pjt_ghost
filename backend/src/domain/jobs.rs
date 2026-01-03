@@ -9,6 +9,7 @@ use uuid::Uuid;
 // ビジネスモデル（DBのEnumとのマッピング、UIに表示する単位）
 // ------------------------------------------
 #[derive(Debug, Serialize, Deserialize, Type, Clone, PartialEq)]
+#[serde(rename_all = "snake_case")]
 #[sqlx(type_name = "business_model_type", rename_all = "snake_case")]
 pub enum BusinessModel {
     Contract,
