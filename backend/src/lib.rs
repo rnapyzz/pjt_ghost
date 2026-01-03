@@ -16,8 +16,10 @@ pub mod handlers;
 pub mod repositories;
 
 use crate::{
-    domain::{projects::ProjectRepository, users::UserRepository},
-    repositories::{projects::ProjectRepositoryImpl, users::UserRepositoryImpl},
+    domain::{jobs::JobRepository, projects::ProjectRepository, users::UserRepository},
+    repositories::{
+        jobs::JobRepositoryImpl, projects::ProjectRepositoryImpl, users::UserRepositoryImpl,
+    },
 };
 
 // DIコンテナ
@@ -25,6 +27,7 @@ use crate::{
 pub struct AppState {
     pub user_repository: Arc<dyn UserRepository>,
     pub project_repository: Arc<dyn ProjectRepository>,
+    pub job_repository: Arc<dyn JobRepository>,
 }
 
 // ルーターを作る関数
@@ -36,10 +39,12 @@ pub fn create_app(pool: PgPool) -> Router {
 
     let user_repository = UserRepositoryImpl::new(pool.clone());
     let project_repository = ProjectRepositoryImpl::new(pool.clone());
+    let job_repository = JobRepositoryImpl::new(pool.clone());
 
     let state = AppState {
         user_repository: Arc::new(user_repository),
         project_repository: Arc::new(project_repository),
+        job_repository: Arc::new(job_repository),
     };
 
     Router::new()
@@ -52,6 +57,10 @@ pub fn create_app(pool: PgPool) -> Router {
         .route(
             "/projects/{id}",
             patch(handlers::projects::update_project).delete(handlers::projects::delete_project),
+        )
+        .route(
+            "/projects/{id}/jobs",
+            post(handlers::jobs::create_job).get(handlers::jobs::list_jobs),
         )
         .layer(TraceLayer::new_for_http())
         .layer(cors)
