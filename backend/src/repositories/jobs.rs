@@ -72,4 +72,58 @@ impl JobRepository for JobRepositoryImpl {
 
         Ok(jobs)
     }
+
+    async fn update(
+        &self,
+        id: Uuid,
+        project_id: Uuid,
+        name: Option<String>,
+        description: Option<String>,
+        business_model: Option<BusinessModel>,
+    ) -> Result<Job> {
+        let job = sqlx::query_as!(
+            Job,
+            r#"
+            UPDATE jobs
+            SET
+                name = COALESCE($1, name),
+                description = COALESCE($2, description),
+                business_model = COALESCE($3, business_model),
+                updated_at = NOW()
+            WHERE id = $4 AND project_id = $5
+            RETURNING
+                id,
+                project_id,
+                name,
+                description,
+                business_model as "business_model: BusinessModel",
+                created_at,
+                updated_at
+            "#,
+            name,
+            description,
+            business_model as Option<BusinessModel>,
+            id,
+            project_id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(job)
+    }
+
+    async fn delete(&self, id: Uuid, project_id: Uuid) -> Result<u64> {
+        let result = sqlx::query!(
+            r#"
+            DELETE FROM jobs
+            WHERE id = $1 AND project_id = $2
+            "#,
+            id,
+            project_id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(result.rows_affected())
+    }
 }

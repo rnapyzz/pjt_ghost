@@ -62,6 +62,10 @@ pub fn create_app(pool: PgPool) -> Router {
             "/projects/{id}/jobs",
             post(handlers::jobs::create_job).get(handlers::jobs::list_jobs),
         )
+        .route(
+            "/projects/{id}/jobs/{job_id}",
+            patch(handlers::jobs::update_job).delete(handlers::jobs::delete_job),
+        )
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .with_state(state)
