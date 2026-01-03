@@ -14,10 +14,14 @@ import {
 import { useProjects } from "./features/projects/api/getProjects";
 import { CreateProjectDialog } from "./features/projects/components/CreateProjectDialog";
 
+// useQueryやuseMutationを使うためにqueryClientを作成しておく
 const queryClient = new QueryClient();
 
+// ホームページに表示するコンポーネント（まだ空）
 const Dashboard = () => <h2 className="text-2xl font-bold">Dashboard</h2>;
 
+// プロジェクト一覧ページを表示するためのコンポーネント
+// TODO: 別ファイルに分割する
 const Projects = () => {
   const { data: projects, isLoading, isError, error } = useProjects();
 
@@ -69,13 +73,18 @@ const Projects = () => {
   );
 };
 
+// 依存関係を意識して、データ層、設定/テーマ層、ルーター層、ルート定義の順に包む
 function App() {
   return (
+    // データ層: どの場所でも使い得る、UIやURLに依存しない
     <QueryClientProvider client={queryClient}>
+      {/* // テーマ層: 全ページに適用する */}
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        {/* ルーター層: この内側で<Link>などのルーター機能を使う */}
         <BrowserRouter>
+          {/* コンテンツ層: 実際の画面 */}
+          {/* AppLayoutの中で<Link>やToggleThemeを使っているので、他のコンポーネントはその内側に置く */}
           <Routes>
-            {/* レイアウトの中に各ページを配置 */}
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/projects" element={<Projects />} />
