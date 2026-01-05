@@ -76,16 +76,16 @@ pub trait ItemRepository: Send + Sync {
     async fn list_item_types(&self, account_id: Option<Uuid>) -> Result<Vec<ItemType>>;
 
     // データ操作系メソッド
-    // async fn create(
-    //     &self,
-    //     job_id: Uuid,
-    //     item_type_id: Uuid,
-    //     assignee_id: Option<Uuid>,
-    //     name: String,
-    //     description: String,
-    //     entries: Vec<(NaiveDate, i64)>,
-    // ) -> Result<Item>;
-    // async fn find_by_job_id(&self, job_id: Uuid) -> Result<Vec<Item>>;
+    async fn create(
+        &self,
+        job_id: Uuid,
+        item_type_id: Uuid,
+        assignee_id: Option<Uuid>,
+        name: String,
+        description: String,
+        entries: Vec<(NaiveDate, i64)>,
+    ) -> Result<Item>;
+    async fn find_by_job_id(&self, job_id: Uuid) -> Result<Vec<Item>>;
 
     // TODO
     // async fn update(&self) -> Result<()>;

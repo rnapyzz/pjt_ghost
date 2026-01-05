@@ -1,9 +1,10 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use chrono::NaiveDate;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::domain::items::{Account, AccountCategory, ItemRepository, ItemType};
+use crate::domain::items::{Account, AccountCategory, Entry, Item, ItemRepository, ItemType};
 
 pub struct ItemRepositoryImpl {
     pool: PgPool,
@@ -66,5 +67,118 @@ impl ItemRepository for ItemRepositoryImpl {
             }
         };
         Ok(types)
+    }
+
+    async fn create(
+        &self,
+        job_id: Uuid,
+        item_type_id: Uuid,
+        assignee_id: Option<Uuid>,
+        name: String,
+        description: String,
+        entries: Vec<(NaiveDate, i64)>,
+    ) -> Result<Item> {
+        let mut tx = self.pool.begin().await?;
+
+        let item_rec = sqlx::query!(
+            r#"
+            INSERT INTO items (job_id, item_type_id, assignee_id, name, description)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, created_at, updated_at
+            "#,
+            job_id,
+            item_type_id,
+            assignee_id,
+            name,
+            description
+        )
+        .fetch_one(&mut *tx)
+        .await?;
+
+        let mut saved_entries = Vec::new();
+        for (date, amount) in entries {
+            let entry = sqlx::query_as!(
+                Entry,
+                r#"
+            INSERT INTO entries (item_id, date, amount)
+            VALUES ($1, $2, $3)
+            RETURNING id, item_id, date, amount, created_at, updated_at
+            "#,
+                item_rec.id,
+                date,
+                amount
+            )
+            .fetch_one(&mut *tx)
+            .await?;
+
+            saved_entries.push(entry);
+        }
+
+        tx.commit().await?;
+
+        Ok(Item {
+            id: item_rec.id,
+            job_id,
+            item_type_id,
+            assignee_id,
+            name,
+            description,
+            entries: saved_entries,
+            created_at: item_rec.created_at,
+            updated_at: item_rec.updated_at,
+        })
+    }
+
+    async fn find_by_job_id(&self, job_id: Uuid) -> Result<Vec<Item>> {
+        let item_recs = sqlx::query!(
+            r#"
+            SELECT id, job_id, item_type_id, assignee_id, name, description, created_at, updated_at
+            FROM items WHERE job_id = $1 ORDER BY created_at
+            "#,
+            job_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        if item_recs.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let item_ids: Vec<Uuid> = item_recs.iter().map(|rec| rec.id).collect();
+        let all_entries = sqlx::query_as!(
+            Entry,
+            r#"
+            SELECT id, item_id, date, amount, created_at, updated_at
+            FROM entries
+            WHERE item_id = ANY($1)
+            ORDER BY date
+            "#,
+            &item_ids
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let mut result = Vec::new();
+        for rec in item_recs {
+            let my_entries: Vec<Entry> = all_entries
+                .iter()
+                .filter(|e| e.item_id == rec.id)
+                .cloned()
+                .collect();
+
+            result.push(Item {
+                id: rec.id,
+                job_id: rec.job_id,
+                item_type_id: rec.item_type_id,
+                assignee_id: rec.assignee_id,
+                name: rec.name,
+                description: rec.description,
+                entries: my_entries,
+                created_at: rec.created_at,
+                updated_at: rec.updated_at,
+            });
+        }
+
+        Ok(result)
     }
 }
