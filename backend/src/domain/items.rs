@@ -86,8 +86,15 @@ pub trait ItemRepository: Send + Sync {
         entries: Vec<(NaiveDate, i64)>,
     ) -> Result<Item>;
     async fn find_by_job_id(&self, job_id: Uuid) -> Result<Vec<Item>>;
-
-    // TODO
-    // async fn update(&self) -> Result<()>;
-    // async fn delete(&self) -> Result<()>;
+    async fn update(
+        &self,
+        item_id: Uuid,
+        job_id: Uuid,
+        // item_type_id: Option<Uuid>,  // 項目タイプは変更不可
+        assignee_id: Option<Uuid>,
+        name: Option<String>,
+        description: Option<String>,
+        entries: Option<Vec<(NaiveDate, i64)>>,
+    ) -> Result<Item>;
+    async fn delete(&self, item_id: Uuid, job_id: Uuid) -> Result<u64>;
 }

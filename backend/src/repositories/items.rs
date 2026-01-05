@@ -181,4 +181,104 @@ impl ItemRepository for ItemRepositoryImpl {
 
         Ok(result)
     }
+
+    async fn update(
+        &self,
+        item_id: Uuid,
+        job_id: Uuid,
+        assignee_id: Option<Uuid>,
+        name: Option<String>,
+        description: Option<String>,
+        entries: Option<Vec<(NaiveDate, i64)>>,
+    ) -> Result<Item> {
+        // 現状の update は Delete-Insert 方式
+
+        let mut tx = self.pool.begin().await?;
+
+        // itemの更新
+        sqlx::query!(
+            r#"
+            UPDATE items
+            SET
+                assignee_id = COALESCE($1, assignee_id),
+                name = COALESCE($2, name),
+                description = COALESCE($3, description),
+                updated_at = now()
+            WHERE id = $4 AND job_id = $5 
+            "#,
+            assignee_id,
+            name,
+            description,
+            item_id,
+            job_id
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        // entryの更新
+        if let Some(new_entries) = entries {
+            sqlx::query!("DELETE FROM entries WHERE item_id = $1", item_id)
+                .execute(&mut *tx)
+                .await?;
+
+            for (date, amount) in new_entries {
+                sqlx::query!(
+                    "INSERT INTO entries (item_id, date, amount) VALUES ($1, $2, $3)",
+                    item_id,
+                    date,
+                    amount
+                )
+                .execute(&mut *tx)
+                .await?;
+            }
+        }
+
+        tx.commit().await?;
+
+        let item_rec = sqlx::query!(r#"SELECT * FROM items WHERE id = $1"#, item_id)
+            .fetch_one(&self.pool)
+            .await?;
+
+        let entries_recs = sqlx::query_as!(
+            Entry,
+            r#"SELECT * FROM entries WHERE item_id = $1 ORDER BY date"#,
+            item_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(Item {
+            id: item_rec.id,
+            job_id: item_rec.job_id,
+            item_type_id: item_rec.item_type_id,
+            assignee_id: item_rec.assignee_id,
+            name: item_rec.name,
+            description: item_rec.description,
+            entries: entries_recs,
+            created_at: item_rec.created_at,
+            updated_at: item_rec.updated_at,
+        })
+    }
+
+    async fn delete(&self, item_id: Uuid, job_id: Uuid) -> Result<u64> {
+        let mut tx = self.pool.begin().await?;
+
+        // 紐づいているEntryを削除
+        sqlx::query!("DELETE FROM entries WHERE item_id = $1", item_id)
+            .execute(&mut *tx)
+            .await?;
+
+        // Itemを削除
+        let result = sqlx::query!(
+            "DELETE FROM items WHERE id = $1 AND job_id = $2",
+            item_id,
+            job_id
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+
+        Ok(result.rows_affected())
+    }
 }

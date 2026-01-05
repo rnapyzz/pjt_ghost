@@ -77,6 +77,10 @@ pub fn create_app(pool: PgPool) -> Router {
             "/projects/{id}/jobs/{job_id}/items",
             post(handlers::items::create_item).get(handlers::items::list_items),
         )
+        .route(
+            "/projects/{id}/jobs/{job_id}/items/{item_id}",
+            patch(handlers::items::update_item).delete(handlers::items::delete_item),
+        )
         .route("/accounts", get(handlers::items::list_accounts))
         .route("/item_types", get(handlers::items::list_item_types))
         .layer(TraceLayer::new_for_http())
