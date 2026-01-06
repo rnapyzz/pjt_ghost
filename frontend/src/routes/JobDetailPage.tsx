@@ -5,8 +5,8 @@ import { getJob } from "@/features/jobs/api/getJob";
 import { getItems } from "@/features/items/api/itemOperations";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { BudgetGrid } from "@/features/items/components/BudgetGrid";
+import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
 
 export const JobDetailPage = () => {
   const { projectId, jobId } = useParams();
@@ -91,8 +91,7 @@ export const JobDetailPage = () => {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>予実管理 (2026年度)</CardTitle>
 
-          {/* 項目追加ボタン（ロジックはまだ未実装なので見た目だけ） */}
-          <Button size="sm">+ Add Item</Button>
+          <CreateItemDialog projectId={projectId!} jobId={jobId!} />
         </CardHeader>
         <CardContent>
           {/* 作成したグリッドコンポーネントを表示 */}
