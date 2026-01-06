@@ -18,7 +18,7 @@ export type Job = {
 
 export type Account = {
   id: string;
-  cetegory: string;
+  category: string;
   name: string;
 };
 
