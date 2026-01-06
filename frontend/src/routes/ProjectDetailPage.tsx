@@ -11,12 +11,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getJobs } from "@/features/jobs/api/getJobs";
 import { getProject } from "@/features/projects/api/getProject";
+import { CreateJobDialog } from "@/features/jobs/components/CreateJobDialog";
 
 export const ProjectDetailPage = () => {
   const { projectId } = useParams();
 
   // 1. プロジェクト情報の取得
-  const { data: project, isLoading: isLoadingProject } = useQuery({
+  const {
+    data: project,
+    isLoading: isLoadingProject,
+    isError: isErrorProject,
+    error: errorProject,
+  } = useQuery({
     queryKey: ["project", projectId],
     queryFn: () => getProject(projectId!),
     enabled: !!projectId, // projectIdがある時だけ実行
@@ -31,6 +37,22 @@ export const ProjectDetailPage = () => {
 
   if (isLoadingProject || isLoadingJobs) {
     return <div className="p-10 text-center">Loading...</div>;
+  }
+
+  if (isErrorProject) {
+    return (
+      <div className="p-10 text-center text-red-500">
+        <h2 className="text-xl font-bold">Error fetching project</h2>
+        <p>
+          {errorProject instanceof Error
+            ? errorProject.message
+            : "Unknown error"}
+        </p>
+        <p className="text-sm text-gray-500 mt-2">
+          ブラウザのコンソール(F12)も確認してください
+        </p>
+      </div>
+    );
   }
 
   if (!project) {
@@ -50,7 +72,7 @@ export const ProjectDetailPage = () => {
       <div className="border-t pt-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">Jobs (案件一覧)</h3>
-          {/* ここに後で「Job作成ボタン」を追加します */}
+          <CreateJobDialog projectId={projectId!} />
         </div>
 
         {/* Job一覧グリッド */}

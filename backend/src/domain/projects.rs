@@ -17,6 +17,7 @@ pub struct Project {
 pub trait ProjectRepository: Send + Sync {
     async fn create(&self, name: String, description: String, owner_id: Uuid) -> Result<Project>;
     async fn list(&self, owner_id: Uuid) -> Result<Vec<Project>>;
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Project>>;
     async fn update(
         &self,
         id: Uuid,
