@@ -73,7 +73,9 @@ pub fn create_app(pool: PgPool) -> Router {
         )
         .route(
             "/projects/{id}/jobs/{job_id}",
-            patch(handlers::jobs::update_job).delete(handlers::jobs::delete_job),
+            get(handlers::jobs::get_job)
+                .patch(handlers::jobs::update_job)
+                .delete(handlers::jobs::delete_job),
         )
         .route(
             "/projects/{id}/jobs/{job_id}/items",

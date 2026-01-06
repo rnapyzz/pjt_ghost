@@ -73,6 +73,29 @@ impl JobRepository for JobRepositoryImpl {
         Ok(jobs)
     }
 
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Job>> {
+        let job = sqlx::query_as!(
+            Job,
+            r#"
+            SELECT
+                id,
+                project_id,
+                name,
+                description,
+                business_model as "business_model: BusinessModel",
+                created_at,
+                updated_at
+            FROM jobs
+            WHERE id = $1
+            "#,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(job)
+    }
+
     async fn update(
         &self,
         id: Uuid,

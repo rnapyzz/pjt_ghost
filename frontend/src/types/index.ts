@@ -15,3 +15,33 @@ export type Job = {
   created_at: string;
   updated_at: string;
 };
+
+export type Account = {
+  id: string;
+  cetegory: string;
+  name: string;
+};
+
+export type ItemType = {
+  id: string;
+  account_id: string;
+  name: string;
+};
+
+export type Entry = {
+  item_id: string;
+  date: string;
+  amount: number;
+};
+
+export type Item = {
+  id: string;
+  job_id: string;
+  item_type_id: string;
+  assignee_id: string | null;
+  name: string;
+  description: string;
+  entries: Entry[];
+  created_at: string;
+  updated_at: string;
+};
