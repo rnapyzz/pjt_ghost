@@ -41,6 +41,18 @@ pub struct UpdateEntryRequest {
     pub date: NaiveDate,
     pub amount: i64,
 }
+
+#[derive(Deserialize)]
+pub struct UpdateEntryDTO {
+    pub date: NaiveDate,
+    pub amount: i64,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateEntriesRequest {
+    pub entries: Vec<UpdateEntryDTO>,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct UpdateItemRequest {
     pub assignee_id: Option<Uuid>,
@@ -154,6 +166,29 @@ pub async fn update_item(
         })?;
 
     Ok((StatusCode::OK, Json(item)))
+}
+
+pub async fn update_entries(
+    Path((_project_id, _job_id, item_id)): Path<(Uuid, Uuid, Uuid)>,
+    State(state): State<AppState>,
+    Json(payload): Json<UpdateEntriesRequest>,
+) -> Result<StatusCode, (StatusCode, String)> {
+    let entries: Vec<(NaiveDate, i64)> = payload
+        .entries
+        .into_iter()
+        .map(|e| (e.date, e.amount))
+        .collect();
+
+    state
+        .item_repository
+        .update_entries(item_id, entries)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to update entries: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 pub async fn delete_item(

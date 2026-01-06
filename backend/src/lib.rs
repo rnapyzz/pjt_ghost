@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     Router,
-    routing::{get, patch, post},
+    routing::{get, patch, post, put},
 };
 use sqlx::PgPool;
 use tokio::net::TcpListener;
@@ -84,6 +84,10 @@ pub fn create_app(pool: PgPool) -> Router {
         .route(
             "/projects/{id}/jobs/{job_id}/items/{item_id}",
             patch(handlers::items::update_item).delete(handlers::items::delete_item),
+        )
+        .route(
+            "/projects/{id}/jobs/{job_id}/items/{item_id}/entries",
+            put(handlers::items::update_entries),
         )
         .route("/accounts", get(handlers::items::list_accounts))
         .route("/item_types", get(handlers::items::list_item_types))

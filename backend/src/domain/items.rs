@@ -118,5 +118,6 @@ pub trait ItemRepository: Send + Sync {
         description: Option<String>,
         entries: Option<Vec<(NaiveDate, i64)>>,
     ) -> Result<Item>;
+    async fn update_entries(&self, id: Uuid, entries: Vec<(NaiveDate, i64)>) -> Result<()>;
     async fn delete(&self, item_id: Uuid, job_id: Uuid) -> Result<u64>;
 }

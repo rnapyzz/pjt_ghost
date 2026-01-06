@@ -260,6 +260,32 @@ impl ItemRepository for ItemRepositoryImpl {
         })
     }
 
+    async fn update_entries(&self, id: Uuid, entries: Vec<(NaiveDate, i64)>) -> Result<()> {
+        let mut tx = self.pool.begin().await?;
+
+        sqlx::query!(r#"DELETE FROM entries WHERE item_id = $1"#, id)
+            .execute(&mut *tx)
+            .await?;
+
+        for (date, amount) in entries {
+            sqlx::query!(
+                r#"
+                INSERT INTO entries (item_id, date, amount)
+                VALUES ($1, $2, $3)
+                "#,
+                id,
+                date,
+                amount
+            )
+            .execute(&mut *tx)
+            .await?;
+        }
+
+        tx.commit().await?;
+
+        Ok(())
+    }
+
     async fn delete(&self, item_id: Uuid, job_id: Uuid) -> Result<u64> {
         let mut tx = self.pool.begin().await?;
 
