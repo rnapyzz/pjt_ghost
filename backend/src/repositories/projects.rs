@@ -52,6 +52,21 @@ impl ProjectRepository for ProjectRepositoryImpl {
         Ok(projects)
     }
 
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Project>> {
+        let project = sqlx::query_as!(
+            Project,
+            r#"
+            SELECT id, name, description, owner_id, created_at, updated_at
+            FROM projects WHERE id = $1
+            "#,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(project)
+    }
+
     async fn update(
         &self,
         id: Uuid,

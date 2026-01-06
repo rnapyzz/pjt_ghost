@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AppLayout } from "@/components/layouts/AppLayout";
 import { DashboardPage } from "./routes/DashboardPage";
 import { ProjectPage } from "./routes/ProjectsPage";
+import { ProjectDetailPage } from "./routes/ProjectDetailPage";
 
 // useQueryやuseMutationを使うためにqueryClientを作成しておく
 const queryClient = new QueryClient();
@@ -23,7 +24,10 @@ function App() {
             <Route element={<AppLayout />}>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/projects" element={<ProjectPage />} />
-              {/* <Route path="/projects/:projectId" element={<ProjectDetailPage />} /> */}
+              <Route
+                path="/projects/:projectId"
+                element={<ProjectDetailPage />}
+              />
             </Route>
           </Routes>
         </BrowserRouter>

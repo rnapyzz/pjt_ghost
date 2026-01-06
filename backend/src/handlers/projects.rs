@@ -73,6 +73,23 @@ pub async fn list_projects(
     Ok(Json(projects))
 }
 
+pub async fn get_project(
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+) -> Result<Json<Project>, (StatusCode, String)> {
+    let project = state
+        .project_repository
+        .find_by_id(id)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to find project: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?
+        .ok_or((StatusCode::NOT_FOUND, "Project not found".to_string()))?;
+
+    Ok(Json(project))
+}
+
 pub async fn update_project(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,

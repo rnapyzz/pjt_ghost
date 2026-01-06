@@ -2,7 +2,7 @@ import axios from "axios";
 
 // 共通のベース情報を設定したapiというクライアントを作っておく
 export const api = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "http://127.0.0.1:3000",
 });
 
 // 開発用の固定ユーザーID
