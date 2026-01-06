@@ -64,6 +64,7 @@ pub trait JobRepository: Send + Sync {
         business_model: BusinessModel,
     ) -> Result<Job>;
     async fn find_by_project_id(&self, project_id: Uuid) -> Result<Vec<Job>>;
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Job>>;
     async fn update(
         &self,
         id: Uuid,

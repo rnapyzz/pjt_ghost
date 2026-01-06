@@ -63,6 +63,23 @@ pub async fn list_jobs(
     Ok((StatusCode::OK, Json(jobs)))
 }
 
+pub async fn get_job(
+    Path((_project_id, job_id)): Path<(Uuid, Uuid)>,
+    State(state): State<AppState>,
+) -> Result<Json<Job>, (StatusCode, String)> {
+    let job = state
+        .job_repository
+        .find_by_id(job_id)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to get job: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?
+        .ok_or((StatusCode::NOT_FOUND, "Job not found".to_string()))?;
+
+    Ok(Json(job))
+}
+
 pub async fn update_job(
     Path((project_id, job_id)): Path<(Uuid, Uuid)>,
     State(state): State<AppState>,
