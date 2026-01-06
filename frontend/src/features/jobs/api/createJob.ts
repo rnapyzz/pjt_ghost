@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type CreateJobDTO = {
   name: string;
+  description: string;
   business_model: "contract" | "ses" | "saas" | "media" | "internal" | "rnd";
 };
 

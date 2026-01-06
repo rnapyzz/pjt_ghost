@@ -16,10 +16,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateJob } from "../api/createJob";
+import { Textarea } from "@/components/ui/textarea";
 
 // バリデーションスキーマ
 const schema = z.object({
   name: z.string().min(1, "Job名は必須です"),
+  description: z.string().optional(),
   business_model: z.enum([
     "saas",
     "ses",
@@ -49,17 +51,22 @@ export const CreateJobDialog = ({ projectId }: Props) => {
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
-      business_model: "ses", // デフォルト値
+      description: "",
+      business_model: "ses",
     },
   });
 
   const onSubmit = (data: FormValues) => {
-    mutate(data, {
-      onSuccess: () => {
-        setOpen(false);
-        reset(); // フォームをクリア
-      },
-    });
+    mutate(
+      // undefinedの場合は空文字に変換
+      { ...data, description: data.description || "" },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          reset(); // フォームをクリア
+        },
+      }
+    );
   };
 
   return (
@@ -87,6 +94,17 @@ export const CreateJobDialog = ({ projectId }: Props) => {
             {errors.name && (
               <p className="text-sm text-red-500">{errors.name.message}</p>
             )}
+          </div>
+
+          {/* Job Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            {/* Textareaがなければ <Input ... /> でもOK */}
+            <Textarea
+              id="description"
+              placeholder="案件の詳細メモなど（任意）"
+              {...register("description")}
+            />
           </div>
 
           {/* Business Model (Native Select) */}
