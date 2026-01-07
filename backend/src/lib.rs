@@ -78,6 +78,10 @@ pub fn create_app(pool: PgPool) -> Router {
                 .delete(handlers::jobs::delete_job),
         )
         .route(
+            "/projects/{id}/jobs/{job_id}/export-csv",
+            get(handlers::items::export_items_csv),
+        )
+        .route(
             "/projects/{id}/jobs/{job_id}/items",
             post(handlers::items::create_item).get(handlers::items::list_items),
         )

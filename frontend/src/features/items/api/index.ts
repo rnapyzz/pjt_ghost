@@ -166,3 +166,30 @@ export const useUpdateEntries = (projectId: string, jobId: string) => {
     },
   });
 };
+
+// CSVダウンロード用のURL生成関数
+export const getExportCsvUrl = (projectId: string, jobId: string) => {
+  // api.getUri() などが使えれば良いですが、直接文字列結合で
+  // バックエンドのURLを指すようにします。
+  // ※ Viteのプロキシ設定や環境変数に合わせて調整してください
+  return `http://localhost:3000/projects/${projectId}/jobs/${jobId}/export-csv`;
+};
+
+// または、axiosでblobとして取得してダウンロードさせる関数
+export const downloadCsv = async (projectId: string, jobId: string) => {
+  const response = await api.get(
+    `/projects/${projectId}/jobs/${jobId}/export-csv`,
+    {
+      responseType: "blob",
+    }
+  );
+
+  // ブラウザでダウンロード発火
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", `budget_${jobId}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};

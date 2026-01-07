@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use axum::{
     Json,
     extract::{Path, Query, State},
-    http::StatusCode,
+    http::{HeaderMap, HeaderValue, StatusCode, header},
+    response::IntoResponse,
 };
 use chrono::NaiveDate;
 use serde::Deserialize;
@@ -212,4 +215,80 @@ pub async fn delete_item(
     }
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+pub async fn export_items_csv(
+    Path((_project_id, job_id)): Path<(Uuid, Uuid)>,
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let items = state
+        .item_repository
+        .find_by_job_id(job_id)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let mut wtr = csv::Writer::from_writer(vec![]);
+
+    // ヘッダ行の作成
+    let start_date = chrono::NaiveDate::from_ymd_opt(2026, 4, 1).unwrap();
+    let mut months = Vec::new();
+    for i in 0..12 {
+        let d = start_date
+            .checked_add_months(chrono::Months::new(i))
+            .unwrap();
+        months.push(d)
+    }
+
+    let mut headers = vec![
+        "item_id".to_string(),
+        "name".to_string(),
+        "item_type_id".to_string(),
+    ];
+    for m in &months {
+        headers.push(m.format("%Y-%m-%d").to_string());
+    }
+    wtr.write_record(&headers)
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    // データ行の書き込み
+    for item in items {
+        let entry_map: HashMap<chrono::NaiveDate, i64> =
+            item.entries.iter().map(|e| (e.date, e.amount)).collect();
+
+        let mut row = vec![
+            item.id.to_string(),
+            item.name.clone(),
+            item.item_type_id.to_string(),
+        ];
+
+        for m in &months {
+            let amount = entry_map.get(m).unwrap_or(&0);
+            row.push(amount.to_string());
+        }
+
+        wtr.write_record(&row)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    }
+
+    // レスポンスの生成
+    let data = wtr
+        .into_inner()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let filename = format!("budget_export_{}", job_id);
+
+    let mut headers = HeaderMap::new();
+
+    headers.insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("text/csv; charset=utf-8"),
+    );
+
+    let content_disposition_value = format!("attachment; filename=\"{}\"", filename);
+    headers.insert(
+        header::CONTENT_DISPOSITION,
+        HeaderValue::from_str(&content_disposition_value)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?,
+    );
+
+    Ok((headers, data))
 }
