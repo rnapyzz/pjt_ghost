@@ -39,7 +39,7 @@ async fn test_list_accounts_and_item_types(pool: PgPool) {
 
     let first_account = &accounts[0];
 
-    let uri = format!("/item_types?account_id={}", first_account.id);
+    let uri = format!("/item-types?account_id={}", first_account.id);
     let response_item_types = app
         .oneshot(
             Request::builder()
