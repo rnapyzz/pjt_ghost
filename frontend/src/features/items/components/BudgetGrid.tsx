@@ -1,6 +1,4 @@
-// src/features/items/components/BudgetGrid.tsx
-
-import React, { useState, useMemo } from "react"; // Reactをimportに追加
+import React, { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { Item, Entry } from "@/types";
@@ -15,8 +13,8 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useUpdateEntries } from "../api/updateEntries";
-import { getAccounts, getItemTypes } from "../api/itemOperations";
+import { getAccounts, getItemTypes, useUpdateEntries } from "../api";
+import { RowActionMenu } from "./RowActionMenu";
 
 type Props = {
   items: Item[];
@@ -220,13 +218,13 @@ export const BudgetGrid = ({ items }: Props) => {
   const handleSave = () => {
     const promises = draftItems.map((draftItem) => {
       return mutate({
-        projectId: projectId!,
-        jobId: jobId!,
         itemId: draftItem.id,
-        entries: draftItem.entries.map((e) => ({
-          date: e.date,
-          amount: e.amount,
-        })),
+        data: {
+          entries: draftItem.entries.map((e) => ({
+            date: e.date,
+            amount: e.amount,
+          })),
+        },
       });
     });
 
@@ -302,11 +300,23 @@ export const BudgetGrid = ({ items }: Props) => {
                     return (
                       <TableRow key={item.id}>
                         <TableCell className="sticky left-0 z-10 bg-background border-r">
-                          <div className="flex flex-col">
-                            <span className="font-medium">{item.name}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {item.itemType?.name}
-                            </span>
+                          <div className="flex flex-row items-center justify-between gap-2 min-h-10">
+                            {/* 左側: 項目名と種別 */}
+                            <div className="flex flex-col">
+                              <span className="font-medium">{item.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {item.itemType?.name}
+                              </span>
+                            </div>
+
+                            {/* 右側: 操作メニュー (通常モード時のみ表示) */}
+                            {!isEditing && (
+                              <RowActionMenu
+                                projectId={projectId!}
+                                jobId={jobId!}
+                                item={item}
+                              />
+                            )}
                           </div>
                         </TableCell>
                         {months.map((month, monthIndex) => {

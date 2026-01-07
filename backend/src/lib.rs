@@ -90,7 +90,7 @@ pub fn create_app(pool: PgPool) -> Router {
             put(handlers::items::update_entries),
         )
         .route("/accounts", get(handlers::items::list_accounts))
-        .route("/item_types", get(handlers::items::list_item_types))
+        .route("/item-types", get(handlers::items::list_item_types))
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .with_state(state)
