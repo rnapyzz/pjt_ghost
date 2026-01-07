@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from "react";
+// src/features/items/components/BudgetGrid.tsx
+
+import React, { useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { Item, Entry } from "@/types";
@@ -13,13 +15,15 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getAccounts, getItemTypes, useUpdateEntries } from "../api";
+import { Upload } from "lucide-react"; // アイコン
+import { useUpdateEntries, getAccounts, getItemTypes } from "../api"; // index.tsから
 import { RowActionMenu } from "./RowActionMenu";
 
 type Props = {
   items: Item[];
 };
 
+// カテゴリの表示順とラベル定義
 const CATEGORY_ORDER = [
   "sales",
   "cost_of_sales",
@@ -33,6 +37,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   non_operating: "営業外",
 };
 
+// ソート用の重み付け
 const CATEGORY_WEIGHT: Record<string, number> = {
   sales: 1,
   cost_of_sales: 2,
@@ -40,6 +45,7 @@ const CATEGORY_WEIGHT: Record<string, number> = {
   non_operating: 4,
 };
 
+// カーソル位置管理用 (ペースト機能用)
 type CellCoords = {
   itemIndex: number;
   monthIndex: number;
@@ -50,6 +56,7 @@ export const BudgetGrid = ({ items }: Props) => {
   const months = generateMonthColumns("2026-04-01");
   const { mutate, isPending } = useUpdateEntries(projectId!, jobId!);
 
+  // マスタデータの取得
   const { data: accounts } = useQuery({
     queryKey: ["accounts"],
     queryFn: getAccounts,
@@ -59,11 +66,15 @@ export const BudgetGrid = ({ items }: Props) => {
     queryFn: () => getItemTypes(),
   });
 
+  // State
   const [isEditing, setIsEditing] = useState(false);
   const [draftItems, setDraftItems] = useState<Item[]>([]);
   const [focusedCell, setFocusedCell] = useState<CellCoords>(null);
 
-  // 1. ソート
+  // ファイル選択用Inputへの参照
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ▼ 1. 表示順序の計算
   const sortedItems = useMemo(() => {
     if (!accounts || !itemTypes) return items;
 
@@ -82,10 +93,10 @@ export const BudgetGrid = ({ items }: Props) => {
     });
   }, [items, accounts, itemTypes]);
 
-  // 2. 表示データ選択
+  // ▼ 2. 画面に表示するアイテムの決定
   const displayItems = isEditing ? draftItems : sortedItems;
 
-  // 3. 集計
+  // ▼ 3. 集計ロジック
   const { groupedItems, monthlyTotals, profit } = useMemo(() => {
     if (!accounts || !itemTypes)
       return { groupedItems: {}, monthlyTotals: {}, profit: {} };
@@ -143,6 +154,7 @@ export const BudgetGrid = ({ items }: Props) => {
     setIsEditing(false);
   };
 
+  // セル編集ハンドラ
   const handleInputChange = (
     itemIndex: number,
     dateKey: string,
@@ -169,6 +181,7 @@ export const BudgetGrid = ({ items }: Props) => {
     });
   };
 
+  // ペースト処理ハンドラ
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     if (!focusedCell) return;
     e.preventDefault();
@@ -215,6 +228,85 @@ export const BudgetGrid = ({ items }: Props) => {
     });
   };
 
+  // ▼▼▼ CSV読み込みハンドラ ▼▼▼
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+
+      // 行分解
+      const rows = text.split(/\r\n|\n|\r/).filter((row) => row.trim() !== "");
+      if (rows.length < 2) return;
+
+      // ヘッダー解析
+      const headers = rows[0].split(",");
+      const dateColMap: Record<number, string> = {};
+      let itemIdIndex = -1;
+
+      headers.forEach((header, index) => {
+        const cleanHeader = header.trim().replace(/^"|"$/g, "");
+        if (cleanHeader === "item_id") {
+          itemIdIndex = index;
+        } else if (cleanHeader.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          dateColMap[index] = cleanHeader;
+        }
+      });
+
+      if (itemIdIndex === -1) {
+        alert("CSVフォーマットエラー: item_id 列が見つかりません。");
+        return;
+      }
+
+      // ドラフトの準備
+      const baseItems = isEditing ? draftItems : sortedItems;
+      const newDraft = JSON.parse(JSON.stringify(baseItems)) as Item[];
+
+      // データ反映
+      for (let i = 1; i < rows.length; i++) {
+        const cols = rows[i].split(",");
+        const rawId = cols[itemIdIndex]?.trim().replace(/^"|"$/g, "");
+        if (!rawId) continue;
+
+        const targetItem = newDraft.find((item) => item.id === rawId);
+        if (targetItem) {
+          Object.entries(dateColMap).forEach(([colIdxStr, dateKey]) => {
+            const colIdx = parseInt(colIdxStr, 10);
+            const rawVal = cols[colIdx]?.trim().replace(/^"|"$/g, "");
+            if (!rawVal) return;
+
+            const numVal = parseInt(rawVal.replace(/,/g, ""), 10);
+            if (!isNaN(numVal)) {
+              const entryIndex = targetItem.entries.findIndex(
+                (e) => e.date === dateKey
+              );
+              if (entryIndex >= 0) {
+                targetItem.entries[entryIndex].amount = numVal;
+              } else {
+                targetItem.entries.push({
+                  item_id: targetItem.id,
+                  date: dateKey,
+                  amount: numVal,
+                });
+              }
+            }
+          });
+        }
+      }
+
+      // 編集モードON & State更新
+      setDraftItems(newDraft);
+      setIsEditing(true);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    reader.readAsText(file);
+  };
+
+  // 保存ハンドラ
   const handleSave = () => {
     const promises = draftItems.map((draftItem) => {
       return mutate({
@@ -253,9 +345,27 @@ export const BudgetGrid = ({ items }: Props) => {
             </Button>
           </>
         ) : (
-          <Button onClick={startEditing} variant="secondary">
-            編集モードにする
-          </Button>
+          <>
+            {/* 隠しInput + インポートボタン */}
+            <input
+              type="file"
+              accept=".csv"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleFileImport}
+            />
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              CSV取込（編集）
+            </Button>
+
+            <Button onClick={startEditing} variant="secondary">
+              編集モードにする
+            </Button>
+          </>
         )}
       </div>
 
@@ -281,7 +391,7 @@ export const BudgetGrid = ({ items }: Props) => {
 
               return (
                 <React.Fragment key={category}>
-                  {/* --- カテゴリヘッダー --- */}
+                  {/* カテゴリヘッダー */}
                   <TableRow className="bg-muted/30 hover:bg-muted/30">
                     <TableCell
                       colSpan={months.length + 1}
@@ -291,7 +401,7 @@ export const BudgetGrid = ({ items }: Props) => {
                     </TableCell>
                   </TableRow>
 
-                  {/* --- 各項目 --- */}
+                  {/* 各項目 */}
                   {categoryItems.map((item) => {
                     const globalIndex = displayItems.findIndex(
                       (i) => i.id === item.id
@@ -301,7 +411,6 @@ export const BudgetGrid = ({ items }: Props) => {
                       <TableRow key={item.id}>
                         <TableCell className="sticky left-0 z-10 bg-background border-r">
                           <div className="flex flex-row items-center justify-between gap-2 min-h-10">
-                            {/* 左側: 項目名と種別 */}
                             <div className="flex flex-col">
                               <span className="font-medium">{item.name}</span>
                               <span className="text-xs text-muted-foreground">
@@ -309,7 +418,7 @@ export const BudgetGrid = ({ items }: Props) => {
                               </span>
                             </div>
 
-                            {/* 右側: 操作メニュー (通常モード時のみ表示) */}
+                            {/* 操作メニュー (閲覧時のみ) */}
                             {!isEditing && (
                               <RowActionMenu
                                 projectId={projectId!}
@@ -319,6 +428,8 @@ export const BudgetGrid = ({ items }: Props) => {
                             )}
                           </div>
                         </TableCell>
+
+                        {/* 月次データセル */}
                         {months.map((month, monthIndex) => {
                           const entry = item.entries.find(
                             (e) => e.date === month.key
@@ -332,7 +443,7 @@ export const BudgetGrid = ({ items }: Props) => {
                               {isEditing ? (
                                 <Input
                                   type="number"
-                                  className="text-right h-8"
+                                  className="text-right h-8 bg-blue-50 focus:bg-white transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                   value={amount === 0 ? "" : amount}
                                   onChange={(e) =>
                                     handleInputChange(
@@ -361,7 +472,7 @@ export const BudgetGrid = ({ items }: Props) => {
                     );
                   })}
 
-                  {/* --- 小計行 --- */}
+                  {/* 小計行 */}
                   <TableRow className="bg-slate-50 border-t-2 border-slate-200 font-semibold">
                     <TableCell className="text-right sticky left-0 z-10 bg-slate-50 border-r">
                       {CATEGORY_LABELS[category]} 合計
@@ -376,7 +487,7 @@ export const BudgetGrid = ({ items }: Props) => {
               );
             })}
 
-            {/* === 営業利益行 === */}
+            {/* 営業利益行 */}
             <TableRow className="bg-slate-100 border-t-4 border-slate-300 font-bold text-base">
               <TableCell className="text-right sticky left-0 z-10 bg-slate-100 border-r">
                 営業利益
