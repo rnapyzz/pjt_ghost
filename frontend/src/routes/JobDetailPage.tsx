@@ -2,11 +2,11 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getJob } from "@/features/jobs/api/getJob";
-import { getItems } from "@/features/items/api/itemOperations";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BudgetGrid } from "@/features/items/components/BudgetGrid";
 import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
+import { getItems } from "@/features/items/api";
 
 export const JobDetailPage = () => {
   const { projectId, jobId } = useParams();
