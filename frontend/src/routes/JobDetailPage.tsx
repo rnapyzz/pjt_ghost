@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BudgetGrid } from "@/features/items/components/BudgetGrid";
 import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
-import { getItems } from "@/features/items/api";
+import { downloadCsv, getItems } from "@/features/items/api";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 export const JobDetailPage = () => {
   const { projectId, jobId } = useParams();
@@ -83,6 +85,16 @@ export const JobDetailPage = () => {
           <p className="text-sm text-muted-foreground">
             Created: {new Date(job.created_at).toLocaleDateString()}
           </p>
+        </div>
+        <div className="flex justify-end gap-2 mb-4">
+          <Button
+            variant="outline"
+            onClick={() => downloadCsv(projectId!, jobId!)}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            CSVエクスポート
+          </Button>
+          {/* 後でインポートボタン を置く */}
         </div>
       </div>
 
