@@ -4,6 +4,7 @@ use axum::{
     Router,
     routing::{get, patch, post, put},
 };
+use jsonwebtoken::{DecodingKey, EncodingKey};
 use sqlx::PgPool;
 use tokio::net::TcpListener;
 use tower_http::{
@@ -33,6 +34,8 @@ pub struct AppState {
     pub project_repository: Arc<dyn ProjectRepository>,
     pub job_repository: Arc<dyn JobRepository>,
     pub item_repository: Arc<dyn ItemRepository>,
+    pub jwt_encoding_key: EncodingKey,
+    pub jwt_decoding_key: DecodingKey,
 }
 
 // ルーターを作る関数
@@ -47,11 +50,18 @@ pub fn create_app(pool: PgPool) -> Router {
     let job_repository = JobRepositoryImpl::new(pool.clone());
     let item_repository = ItemRepositoryImpl::new(pool.clone());
 
+    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+    let encoding_key = EncodingKey::from_secret(secret.as_bytes());
+    let decoding_key = DecodingKey::from_secret(secret.as_bytes());
+
     let state = AppState {
         user_repository: Arc::new(user_repository),
         project_repository: Arc::new(project_repository),
         job_repository: Arc::new(job_repository),
         item_repository: Arc::new(item_repository),
+        jwt_encoding_key: encoding_key,
+        jwt_decoding_key: decoding_key,
     };
 
     Router::new()
