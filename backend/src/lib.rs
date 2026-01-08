@@ -56,7 +56,7 @@ pub fn create_app(pool: PgPool) -> Router {
 
     Router::new()
         .route("/", get(root))
-        .route("/users", post(handlers::users::create_user))
+        .route("/signup", post(handlers::users::create_user))
         .route(
             "/projects",
             post(handlers::projects::create_project).get(handlers::projects::list_projects),
