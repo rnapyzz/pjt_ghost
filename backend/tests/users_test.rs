@@ -124,7 +124,7 @@ async fn test_login(pool: PgPool) {
 
     let wrong_payload = r#"{
         "email": "test_login@example.com",
-        "password": "wrongpassword
+        "password": "wrongpassword"
     }"#;
 
     let wrong_req = Request::builder()
