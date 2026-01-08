@@ -39,7 +39,7 @@ pub struct AppState {
 }
 
 // ルーターを作る関数
-pub fn create_app(pool: PgPool) -> Router {
+pub fn create_app(pool: PgPool, jwt_secret: &str) -> Router {
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
@@ -50,10 +50,8 @@ pub fn create_app(pool: PgPool) -> Router {
     let job_repository = JobRepositoryImpl::new(pool.clone());
     let item_repository = ItemRepositoryImpl::new(pool.clone());
 
-    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-
-    let encoding_key = EncodingKey::from_secret(secret.as_bytes());
-    let decoding_key = DecodingKey::from_secret(secret.as_bytes());
+    let encoding_key = EncodingKey::from_secret(jwt_secret.as_bytes());
+    let decoding_key = DecodingKey::from_secret(jwt_secret.as_bytes());
 
     let state = AppState {
         user_repository: Arc::new(user_repository),
@@ -67,6 +65,7 @@ pub fn create_app(pool: PgPool) -> Router {
     Router::new()
         .route("/", get(root))
         .route("/signup", post(handlers::users::create_user))
+        .route("/login", post(handlers::users::login))
         .route(
             "/projects",
             post(handlers::projects::create_project).get(handlers::projects::list_projects),
@@ -111,8 +110,12 @@ pub fn create_app(pool: PgPool) -> Router {
 }
 
 // サーバーを起動する関数
-pub async fn run(listener: TcpListener, pool: PgPool) -> Result<(), std::io::Error> {
-    let app = create_app(pool);
+pub async fn run(
+    listener: TcpListener,
+    pool: PgPool,
+    jwt_secret: &str,
+) -> Result<(), std::io::Error> {
+    let app = create_app(pool, jwt_secret);
     axum::serve(listener, app).await
 }
 
