@@ -40,7 +40,7 @@ async fn test_create_job(pool: PgPool) {
     .await
     .unwrap();
 
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     let response = app
         .oneshot(
@@ -140,7 +140,7 @@ async fn test_list_jobs(pool: PgPool) {
     .await
     .unwrap();
 
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     let response = app
         .oneshot(
@@ -205,7 +205,7 @@ async fn test_update_job(pool: PgPool) {
         BusinessModel::Media as BusinessModel 
     ).execute(&pool).await.unwrap();
 
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     let response = app.clone()
         .oneshot(
@@ -284,7 +284,7 @@ async fn test_delete_job(pool:PgPool) {
         job_id, project_id, "Test Job", BusinessModel::Internal as BusinessModel
     ).execute(&pool).await.unwrap();
 
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     let response = app
     .oneshot(

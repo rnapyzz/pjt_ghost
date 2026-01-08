@@ -16,7 +16,7 @@ use uuid::Uuid;
 
 #[sqlx::test]
 async fn test_list_accounts_and_item_types(pool: PgPool) {
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     let response = app
         .clone()
@@ -108,7 +108,7 @@ async fn test_create_item_and_list_items(pool: PgPool) {
         .await
         .expect("Seed data not found");
 
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     let response_create = app
         .clone()
@@ -212,7 +212,7 @@ async fn test_lifecycle_create_upadte_delete(pool: PgPool) {
         .await
         .unwrap();
 
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     // create
     let res_create = app

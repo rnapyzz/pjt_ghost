@@ -28,7 +28,7 @@ async fn test_create_project(pool: PgPool) {
     .await
     .unwrap();
 
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     // リクエストの実行
     let response = app
@@ -124,7 +124,7 @@ async fn test_list_projects(pool: PgPool) {
     .unwrap();
 
     // アプリの起動
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     // User1としてリクエストを実施
     let response = app
@@ -210,7 +210,7 @@ async fn test_update_project(pool: PgPool) {
     .unwrap();
 
     // テストケース1: projectのownerが更新する場合 (成功)
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
     let response_ok = app
         .clone()
         .oneshot(
@@ -314,7 +314,7 @@ async fn test_delete_project(pool: PgPool) {
     .await
     .unwrap();
 
-    let app = create_app(pool.clone());
+    let app = create_app(pool.clone(), "test_secret_key");
 
     // テストケース1: owner以外が削除しようとする場合 (NOT FOUND)
     let response_err = app

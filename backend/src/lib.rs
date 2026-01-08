@@ -4,6 +4,7 @@ use axum::{
     Router,
     routing::{get, patch, post, put},
 };
+use jsonwebtoken::{DecodingKey, EncodingKey};
 use sqlx::PgPool;
 use tokio::net::TcpListener;
 use tower_http::{
@@ -33,10 +34,12 @@ pub struct AppState {
     pub project_repository: Arc<dyn ProjectRepository>,
     pub job_repository: Arc<dyn JobRepository>,
     pub item_repository: Arc<dyn ItemRepository>,
+    pub jwt_encoding_key: EncodingKey,
+    pub jwt_decoding_key: DecodingKey,
 }
 
 // ルーターを作る関数
-pub fn create_app(pool: PgPool) -> Router {
+pub fn create_app(pool: PgPool, jwt_secret: &str) -> Router {
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
@@ -47,16 +50,22 @@ pub fn create_app(pool: PgPool) -> Router {
     let job_repository = JobRepositoryImpl::new(pool.clone());
     let item_repository = ItemRepositoryImpl::new(pool.clone());
 
+    let encoding_key = EncodingKey::from_secret(jwt_secret.as_bytes());
+    let decoding_key = DecodingKey::from_secret(jwt_secret.as_bytes());
+
     let state = AppState {
         user_repository: Arc::new(user_repository),
         project_repository: Arc::new(project_repository),
         job_repository: Arc::new(job_repository),
         item_repository: Arc::new(item_repository),
+        jwt_encoding_key: encoding_key,
+        jwt_decoding_key: decoding_key,
     };
 
     Router::new()
         .route("/", get(root))
         .route("/signup", post(handlers::users::create_user))
+        .route("/login", post(handlers::users::login))
         .route(
             "/projects",
             post(handlers::projects::create_project).get(handlers::projects::list_projects),
@@ -101,8 +110,12 @@ pub fn create_app(pool: PgPool) -> Router {
 }
 
 // サーバーを起動する関数
-pub async fn run(listener: TcpListener, pool: PgPool) -> Result<(), std::io::Error> {
-    let app = create_app(pool);
+pub async fn run(
+    listener: TcpListener,
+    pool: PgPool,
+    jwt_secret: &str,
+) -> Result<(), std::io::Error> {
+    let app = create_app(pool, jwt_secret);
     axum::serve(listener, app).await
 }
 
