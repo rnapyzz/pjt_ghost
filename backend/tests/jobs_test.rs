@@ -13,12 +13,18 @@ use uuid::Uuid;
 #[sqlx::test]
 async fn test_create_job(pool: PgPool) {
     let user_id = Uuid::new_v4();
+    let user_email = format!("user_{}@example.com", user_id);
     let project_id = Uuid::new_v4();
 
     sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2)",
+        "
+        INSERT INTO users (id, name, email, password_hash, role)
+        VALUES ($1, $2, $3, $4, $5)",
         user_id,
-        "Test User"
+        "Test User",
+        user_email,
+        "dummy_hash",
+        "member"
     )
     .execute(&pool)
     .await
@@ -73,13 +79,19 @@ async fn test_create_job(pool: PgPool) {
 #[sqlx::test]
 async fn test_list_jobs(pool: PgPool) {
     let user_id = Uuid::new_v4();
+    let user_email = format!("user_{}@example.com", user_id);
     let project_id = Uuid::new_v4();
     let another_project_id = Uuid::new_v4();
 
     sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2)",
+        "
+        INSERT INTO users (id, name, email, password_hash, role)
+        VALUES ($1, $2, $3, $4, $5)",
         user_id,
-        "Test User"
+        "Test User",
+        user_email,
+        "dummy_hash",
+        "member"
     )
     .execute(&pool)
     .await
@@ -159,13 +171,19 @@ async fn test_list_jobs(pool: PgPool) {
 #[sqlx::test]
 async fn test_update_job(pool: PgPool) {
     let user_id = Uuid::new_v4();
+    let user_email = format!("user_{}@example.com", user_id);
     let project_id = Uuid::new_v4();
     let job_id = Uuid::new_v4();
 
     sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2)",
+        "
+        INSERT INTO users (id, name, email, password_hash, role)
+        VALUES ($1, $2, $3, $4, $5)",
         user_id,
-        "Test User"
+        "Test User",
+        user_email,
+        "dummy_hash",
+        "member"
     )
     .execute(&pool)
     .await
@@ -238,13 +256,23 @@ async fn test_update_job(pool: PgPool) {
 #[sqlx::test]
 async fn test_delete_job(pool:PgPool) {
     let user_id = Uuid::new_v4();
+    let user_email = format!("user_{}@example.com", user_id);
     let project_id = Uuid::new_v4();
     let job_id = Uuid::new_v4();
 
     sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2)",
-        user_id, "Test User"
-    ).execute(&pool).await.unwrap();
+        "
+        INSERT INTO users (id, name, email, password_hash, role)
+        VALUES ($1, $2, $3, $4, $5)",
+        user_id,
+        "Test User",
+        user_email,
+        "dummy_hash",
+        "member"
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
 
     sqlx::query!(
         "INSERT INTO projects (id, name, owner_id) VALUES ($1, $2, $3)",

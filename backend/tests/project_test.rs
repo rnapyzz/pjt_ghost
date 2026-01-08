@@ -11,16 +11,22 @@ use uuid::Uuid;
 
 #[sqlx::test]
 async fn test_create_project(pool: PgPool) {
-    // テストのためのユーザーを作成する
     let user_id = Uuid::new_v4();
+    let user_email = format!("user_{}@example.com", user_id);
+
     sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2)",
+        "
+        INSERT INTO users (id, name, email, password_hash, role)
+        VALUES ($1, $2, $3, $4, $5)",
         user_id,
-        "Test Owner"
+        "Test User",
+        user_email,
+        "dummy_hash",
+        "member"
     )
     .execute(&pool)
     .await
-    .expect("Failed to create seed user");
+    .unwrap();
 
     let app = create_app(pool.clone());
 
@@ -58,23 +64,34 @@ async fn test_create_project(pool: PgPool) {
 
 #[sqlx::test]
 async fn test_list_projects(pool: PgPool) {
-    // テスト用のユーザーを2つ作る
     let user1_id = Uuid::new_v4();
+    let user1_email = format!("user_{}@example.com", user1_id);
     let user2_id = Uuid::new_v4();
+    let user2_email = format!("user_{}@example.com", user2_id);
 
-    // ユーザー作成処理
     sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2)",
+        "
+        insert into users (id, name, email, password_hash, role)
+        values ($1, $2, $3, $4, $5)",
         user1_id,
-        "Test User1"
+        "test user1",
+        user1_email,
+        "dummy_hash",
+        "member"
     )
     .execute(&pool)
     .await
     .unwrap();
+
     sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2)",
+        "
+        insert into users (id, name, email, password_hash, role)
+        values ($1, $2, $3, $4, $5)",
         user2_id,
-        "Test User2"
+        "test user2",
+        user2_email,
+        "dummy_hash",
+        "member"
     )
     .execute(&pool)
     .await
@@ -147,16 +164,34 @@ async fn test_list_projects(pool: PgPool) {
 
 #[sqlx::test]
 async fn test_update_project(pool: PgPool) {
-    // テスト用のユーザーを2つ作成
     let user1_id = Uuid::new_v4();
+    let user1_email = format!("user_{}@example.com", user1_id);
     let user2_id = Uuid::new_v4();
+    let user2_email = format!("user_{}@example.com", user2_id);
 
     sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2), ($3, $4)",
+        "
+        insert into users (id, name, email, password_hash, role)
+        values ($1, $2, $3, $4, $5)",
         user1_id,
-        "User 1",
+        "test user1",
+        user1_email,
+        "dummy_hash",
+        "member"
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    sqlx::query!(
+        "
+        insert into users (id, name, email, password_hash, role)
+        values ($1, $2, $3, $4, $5)",
         user2_id,
-        "User 2"
+        "test user2",
+        user2_email,
+        "dummy_hash",
+        "member"
     )
     .execute(&pool)
     .await
@@ -234,16 +269,34 @@ async fn test_update_project(pool: PgPool) {
 
 #[sqlx::test]
 async fn test_delete_project(pool: PgPool) {
-    // テスト用のユーザーを2つ作成
     let user1_id = Uuid::new_v4();
+    let user1_email = format!("user_{}@example.com", user1_id);
     let user2_id = Uuid::new_v4();
+    let user2_email = format!("user_{}@example.com", user2_id);
 
     sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2), ($3, $4)",
+        "
+        insert into users (id, name, email, password_hash, role)
+        values ($1, $2, $3, $4, $5)",
         user1_id,
-        "User 1",
+        "test user1",
+        user1_email,
+        "dummy_hash",
+        "member"
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    sqlx::query!(
+        "
+        insert into users (id, name, email, password_hash, role)
+        values ($1, $2, $3, $4, $5)",
         user2_id,
-        "User 2",
+        "test user2",
+        user2_email,
+        "dummy_hash",
+        "member"
     )
     .execute(&pool)
     .await
