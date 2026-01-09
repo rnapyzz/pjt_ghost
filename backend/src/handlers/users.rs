@@ -8,7 +8,10 @@ use jsonwebtoken::{Header, encode};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::{AppState, domain::users::User};
+use crate::{
+    AppState,
+    domain::users::{Claims, User},
+};
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateUserRequest {
@@ -71,14 +74,6 @@ pub struct LoginRequest {
 #[derive(Debug, Serialize)]
 pub struct LoginResponse {
     pub token: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-    sub: String,
-    exp: usize,
-    iat: usize,
-    name: String,
 }
 
 pub async fn login(

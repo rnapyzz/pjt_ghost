@@ -14,6 +14,7 @@ use tower_http::{
 
 pub mod domain;
 pub mod handlers;
+pub mod middlewares;
 pub mod repositories;
 
 use crate::{

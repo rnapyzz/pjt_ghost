@@ -15,6 +15,14 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Claims {
+    pub sub: String,
+    pub exp: usize,
+    pub iat: usize,
+    pub name: String,
+}
+
 #[async_trait::async_trait]
 pub trait UserRepository: Send + Sync {
     async fn create(&self, name: String, email: String, password_hash: String) -> Result<User>;
