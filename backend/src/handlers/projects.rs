@@ -1,7 +1,7 @@
 use axum::{
     Extension, Json,
     extract::{Path, State},
-    http::{HeaderMap, StatusCode},
+    http::StatusCode,
 };
 use serde::Deserialize;
 use uuid::Uuid;
@@ -82,20 +82,11 @@ pub async fn get_project(
 pub async fn update_project(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-    headers: HeaderMap,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<UpdateProjectPayload>,
 ) -> Result<Json<Project>, (StatusCode, String)> {
-    let user_id_value = headers.get("x-user-id").ok_or((
-        StatusCode::UNAUTHORIZED,
-        "x-user-id header required".to_string(),
-    ))?;
-
-    let user_id_str = user_id_value
-        .to_str()
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid header value".to_string()))?;
-
-    let user_id = Uuid::parse_str(user_id_str)
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid UUID format".to_string()))?;
+    let user_id = Uuid::parse_str(&claims.sub)
+        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid UUID format".to_string()))?;
 
     let project = state
         .project_repository
@@ -118,19 +109,10 @@ pub async fn update_project(
 pub async fn delete_project(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-    headers: HeaderMap,
+    Extension(claims): Extension<Claims>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let user_id_value = headers.get("x-user-id").ok_or((
-        StatusCode::UNAUTHORIZED,
-        "x-user-id header required".to_string(),
-    ))?;
-
-    let user_id_str = user_id_value
-        .to_str()
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid header value".to_string()))?;
-
-    let user_id = Uuid::parse_str(user_id_str)
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid UUID format".to_string()))?;
+    let user_id = Uuid::parse_str(&claims.sub)
+        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid UUID format".to_string()))?;
 
     let count = state
         .project_repository
