@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
-    Router,
+    Router, middleware,
     routing::{get, patch, post, put},
 };
 use jsonwebtoken::{DecodingKey, EncodingKey};
@@ -14,13 +14,16 @@ use tower_http::{
 
 pub mod domain;
 pub mod handlers;
+pub mod middlewares;
 pub mod repositories;
+pub mod utils;
 
 use crate::{
     domain::{
         items::ItemRepository, jobs::JobRepository, projects::ProjectRepository,
         users::UserRepository,
     },
+    middlewares::auth_middleware,
     repositories::{
         items::ItemRepositoryImpl, jobs::JobRepositoryImpl, projects::ProjectRepositoryImpl,
         users::UserRepositoryImpl,
@@ -62,10 +65,8 @@ pub fn create_app(pool: PgPool, jwt_secret: &str) -> Router {
         jwt_decoding_key: decoding_key,
     };
 
-    Router::new()
-        .route("/", get(root))
-        .route("/signup", post(handlers::users::create_user))
-        .route("/login", post(handlers::users::login))
+    // 認証が必要なルート
+    let protected_route = Router::new()
         .route(
             "/projects",
             post(handlers::projects::create_project).get(handlers::projects::list_projects),
@@ -104,6 +105,17 @@ pub fn create_app(pool: PgPool, jwt_secret: &str) -> Router {
         )
         .route("/accounts", get(handlers::items::list_accounts))
         .route("/item-types", get(handlers::items::list_item_types))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            auth_middleware,
+        ));
+
+    // 全体のルーター (Public Routes + Protected Routes)
+    Router::new()
+        .route("/", get(root))
+        .route("/signup", post(handlers::users::create_user))
+        .route("/login", post(handlers::users::login))
+        .merge(protected_route)
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .with_state(state)

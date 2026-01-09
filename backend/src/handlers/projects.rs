@@ -1,12 +1,16 @@
 use axum::{
-    Json,
+    Extension, Json,
     extract::{Path, State},
-    http::{HeaderMap, StatusCode},
+    http::StatusCode,
 };
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{AppState, domain::projects::Project};
+use crate::{
+    AppState,
+    domain::{projects::Project, users::Claims},
+    utils::extract_user_id,
+};
 
 #[derive(Deserialize, Debug)]
 pub struct CreateProjectPayload {
@@ -22,20 +26,10 @@ pub struct UpdateProjectPayload {
 
 pub async fn create_project(
     State(state): State<AppState>,
-    headers: HeaderMap,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<CreateProjectPayload>,
 ) -> Result<(StatusCode, Json<Project>), (StatusCode, String)> {
-    let user_id_value = headers.get("x-user-id").ok_or((
-        StatusCode::UNAUTHORIZED,
-        "x-user-id header required".to_string(),
-    ))?;
-
-    let user_id_str = user_id_value
-        .to_str()
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid header value".to_string()))?;
-
-    let user_id = Uuid::parse_str(user_id_str)
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid UUID format".to_string()))?;
+    let user_id = extract_user_id(&claims)?;
 
     let project = state
         .project_repository
@@ -51,19 +45,9 @@ pub async fn create_project(
 
 pub async fn list_projects(
     State(state): State<AppState>,
-    headers: HeaderMap,
+    Extension(claims): Extension<Claims>,
 ) -> Result<Json<Vec<Project>>, (StatusCode, String)> {
-    let user_id_value = headers.get("x-user-id").ok_or((
-        StatusCode::UNAUTHORIZED,
-        "x-user-id header required".to_string(),
-    ))?;
-
-    let user_id_str = user_id_value
-        .to_str()
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid header value".to_string()))?;
-
-    let user_id = Uuid::parse_str(user_id_str)
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid UUID format".to_string()))?;
+    let user_id = extract_user_id(&claims)?;
 
     let projects = state.project_repository.list(user_id).await.map_err(|e| {
         tracing::error!("Failed to list projects: {:?}", e);
@@ -93,20 +77,10 @@ pub async fn get_project(
 pub async fn update_project(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-    headers: HeaderMap,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<UpdateProjectPayload>,
 ) -> Result<Json<Project>, (StatusCode, String)> {
-    let user_id_value = headers.get("x-user-id").ok_or((
-        StatusCode::UNAUTHORIZED,
-        "x-user-id header required".to_string(),
-    ))?;
-
-    let user_id_str = user_id_value
-        .to_str()
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid header value".to_string()))?;
-
-    let user_id = Uuid::parse_str(user_id_str)
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid UUID format".to_string()))?;
+    let user_id = extract_user_id(&claims)?;
 
     let project = state
         .project_repository
@@ -129,19 +103,9 @@ pub async fn update_project(
 pub async fn delete_project(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-    headers: HeaderMap,
+    Extension(claims): Extension<Claims>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let user_id_value = headers.get("x-user-id").ok_or((
-        StatusCode::UNAUTHORIZED,
-        "x-user-id header required".to_string(),
-    ))?;
-
-    let user_id_str = user_id_value
-        .to_str()
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid header value".to_string()))?;
-
-    let user_id = Uuid::parse_str(user_id_str)
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid UUID format".to_string()))?;
+    let user_id = extract_user_id(&claims)?;
 
     let count = state
         .project_repository
