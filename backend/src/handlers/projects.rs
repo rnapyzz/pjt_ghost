@@ -9,6 +9,7 @@ use uuid::Uuid;
 use crate::{
     AppState,
     domain::{projects::Project, users::Claims},
+    utils::extract_user_id,
 };
 
 #[derive(Deserialize, Debug)]
@@ -28,10 +29,7 @@ pub async fn create_project(
     Extension(claims): Extension<Claims>,
     Json(payload): Json<CreateProjectPayload>,
 ) -> Result<(StatusCode, Json<Project>), (StatusCode, String)> {
-    let user_id = Uuid::parse_str(&claims.sub).map_err(|e| {
-        tracing::error!("Invalid UUID format in token: {:?}", e);
-        (StatusCode::UNAUTHORIZED, e.to_string())
-    })?;
+    let user_id = extract_user_id(&claims)?;
 
     let project = state
         .project_repository
@@ -49,10 +47,7 @@ pub async fn list_projects(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
 ) -> Result<Json<Vec<Project>>, (StatusCode, String)> {
-    let user_id = Uuid::parse_str(&claims.sub).map_err(|e| {
-        tracing::error!("Invalid UUID format in token: {:?}", e);
-        (StatusCode::UNAUTHORIZED, e.to_string())
-    })?;
+    let user_id = extract_user_id(&claims)?;
 
     let projects = state.project_repository.list(user_id).await.map_err(|e| {
         tracing::error!("Failed to list projects: {:?}", e);
@@ -85,8 +80,7 @@ pub async fn update_project(
     Extension(claims): Extension<Claims>,
     Json(payload): Json<UpdateProjectPayload>,
 ) -> Result<Json<Project>, (StatusCode, String)> {
-    let user_id = Uuid::parse_str(&claims.sub)
-        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid UUID format".to_string()))?;
+    let user_id = extract_user_id(&claims)?;
 
     let project = state
         .project_repository
@@ -111,8 +105,7 @@ pub async fn delete_project(
     Path(id): Path<Uuid>,
     Extension(claims): Extension<Claims>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let user_id = Uuid::parse_str(&claims.sub)
-        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid UUID format".to_string()))?;
+    let user_id = extract_user_id(&claims)?;
 
     let count = state
         .project_repository

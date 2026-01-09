@@ -16,6 +16,7 @@ pub mod domain;
 pub mod handlers;
 pub mod middlewares;
 pub mod repositories;
+pub mod utils;
 
 use crate::{
     domain::{
