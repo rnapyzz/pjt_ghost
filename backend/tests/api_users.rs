@@ -95,3 +95,41 @@ async fn test_login_success(pool: PgPool) {
     let token = body["token"].as_str().unwrap();
     assert!(token.len() > 20);
 }
+
+#[sqlx::test]
+async fn test_login_fail_wrong_password(pool: PgPool) {
+    // Arrange
+    let app = common::setup_app(pool);
+    let email = common::random_email();
+
+    let signup_payload = json!({
+        "name": "Test User",
+        "email": email,
+        "password": "correct_password"
+    });
+    let signup_req = Request::builder()
+        .uri("/signup")
+        .method("POST")
+        .header("Content-Type", "application/json")
+        .body(Body::from(signup_payload.to_string()))
+        .unwrap();
+
+    let _ = app.clone().oneshot(signup_req).await.unwrap();
+
+    // Act
+    let login_payload = json!({
+        "email": email,
+        "password": "wrong_password"
+    });
+    let login_req = Request::builder()
+        .uri("/login")
+        .method("POST")
+        .header("Content-Type", "application/json")
+        .body(Body::from(login_payload.to_string()))
+        .unwrap();
+
+    let response = app.oneshot(login_req).await.unwrap();
+
+    // Assert
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}
