@@ -1,9 +1,8 @@
-use std::usize;
-
 use axum::{
     body::Body,
     http::{Request, StatusCode},
 };
+use http_body_util::BodyExt;
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
@@ -35,9 +34,7 @@ async fn test_signup_success(pool: PgPool) {
     // Assert
     assert_eq!(response.status(), StatusCode::CREATED);
 
-    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-        .await
-        .unwrap();
+    let body_bytes = response.into_body().collect().await.unwrap().to_bytes();
     let body: Value = serde_json::from_slice(&body_bytes).unwrap();
 
     assert_eq!(body["name"], "Test User");
@@ -86,9 +83,7 @@ async fn test_login_success(pool: PgPool) {
     // Assert
     assert_eq!(response.status(), StatusCode::OK);
 
-    let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-        .await
-        .unwrap();
+    let body_bytes = response.into_body().collect().await.unwrap().to_bytes();
     let body: Value = serde_json::from_slice(&body_bytes).unwrap();
 
     assert!(body["token"].is_string());
