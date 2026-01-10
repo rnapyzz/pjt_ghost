@@ -1,44 +1,74 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+// src/App.tsx
+
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppLayout } from "@/components/layouts/AppLayout";
+import { AuthProvider, useAuth } from "@/components/auth-provider"; // さっき作ったやつ
+
+// 各ページコンポーネント
 import { DashboardPage } from "./routes/DashboardPage";
 import { ProjectPage } from "./routes/ProjectsPage";
 import { ProjectDetailPage } from "./routes/ProjectDetailPage";
 import { JobDetailPage } from "./routes/JobDetailPage";
+import { LoginPage } from "./routes/LoginPage"; // ★あとで作る
+import type { JSX } from "react";
 
-// useQueryやuseMutationを使うためにqueryClientを作成しておく
 const queryClient = new QueryClient();
 
-// 依存関係を意識して、データ層、設定/テーマ層、ルーター層、ルート定義の順に包む
+// ガード用コンポーネント: ログインしてなければログイン画面へ飛ばす
+function RequireAuth({ children }: { children: JSX.Element }) {
+    const { isAuthenticated, isLoading } = useAuth();
+    const location = useLocation();
+
+    if (isLoading) {
+        return <div>Loading...</div>; // またはローディングスピナー
+    }
+
+    if (!isAuthenticated) {
+        // ログイン画面へリダイレクト（元の場所をstateで渡しておくと親切）
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    return children;
+}
+
 function App() {
-  return (
-    // データ層: どの場所でも使い得る、UIやURLに依存しない
-    <QueryClientProvider client={queryClient}>
-      {/* // テーマ層: 全ページに適用する */}
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        {/* ルーター層: この内側で<Link>などのルーター機能を使う */}
-        <BrowserRouter>
-          {/* コンテンツ層: 実際の画面 */}
-          {/* AppLayoutの中で<Link>やToggleThemeを使っているので、他のコンポーネントはその内側に置く */}
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/projects" element={<ProjectPage />} />
-              <Route
-                path="/projects/:projectId"
-                element={<ProjectDetailPage />}
-              />
-              <Route
-                path="/projects/:projectId/jobs/:jobId"
-                element={<JobDetailPage />}
-              />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
+    return (
+        <QueryClientProvider client={queryClient}>
+            <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+                {/* ★ ここでAuthProviderで包む！ */}
+                <AuthProvider>
+                    <BrowserRouter>
+                        <Routes>
+                            {/* ▼▼▼ 公開ルート (ログイン画面など) ▼▼▼ */}
+                            <Route path="/login" element={<LoginPage />} />
+
+                            {/* ▼▼▼ 保護されたルート (ログイン必須) ▼▼▼ */}
+                            <Route
+                                element={
+                                    <RequireAuth>
+                                        <AppLayout />
+                                    </RequireAuth>
+                                }
+                            >
+                                <Route path="/" element={<DashboardPage />} />
+                                <Route path="/projects" element={<ProjectPage />} />
+                                <Route
+                                    path="/projects/:projectId"
+                                    element={<ProjectDetailPage />}
+                                />
+                                <Route
+                                    path="/projects/:projectId/jobs/:jobId"
+                                    element={<JobDetailPage />}
+                                />
+                            </Route>
+                        </Routes>
+                    </BrowserRouter>
+                </AuthProvider>
+            </ThemeProvider>
+        </QueryClientProvider>
+    );
 }
 
 export default App;
