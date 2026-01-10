@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use axum::Router;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{EncodingKey, Header, encode};
