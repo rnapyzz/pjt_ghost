@@ -18,20 +18,7 @@ async fn test_create_job_success(pool: PgPool) {
     let app = common::setup_app(pool.clone());
     let (token, user_id) = common::create_user_and_get_token(&pool).await;
 
-    let project_id = Uuid::new_v4();
-    sqlx::query!(
-        "INSERT INTO projects (id, name, description, owner_id, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6)",
-        project_id,
-        "Test Project",
-        "Test Project Description",
-        user_id,
-        Utc::now(),
-        Utc::now(),
-    )
-    .execute(&pool)
-    .await
-    .unwrap();
+    let project_id = common::create_test_project(&pool, user_id).await;
 
     let payload = json!({
         "name": "Test New Job",
@@ -67,20 +54,7 @@ async fn test_list_jobs(pool: PgPool) {
     let app = common::setup_app(pool.clone());
     let (token, user_id) = common::create_user_and_get_token(&pool).await;
 
-    let project_id = Uuid::new_v4();
-    sqlx::query!(
-        "INSERT INTO projects (id, name, description, owner_id, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6)",
-        project_id,
-        "List Test Project",
-        "List Test Project Description",
-        user_id,
-        Utc::now(),
-        Utc::now(),
-    )
-    .execute(&pool)
-    .await
-    .unwrap();
+    let project_id = common::create_test_project(&pool, user_id).await;
 
     let job_id = Uuid::new_v4();
     sqlx::query!(
@@ -118,4 +92,52 @@ async fn test_list_jobs(pool: PgPool) {
     let list = body.as_array().unwrap();
     assert_eq!(list.len(), 1);
     assert_eq!(list[0]["name"], "Test Job")
+}
+
+#[sqlx::test]
+async fn test_get_job(pool: PgPool) {
+    // Arrange
+    let app = common::setup_app(pool.clone());
+    let (token, user_id) = common::create_user_and_get_token(&pool).await;
+
+    let project_id = common::create_test_project(&pool, user_id).await;
+
+    let job_id = Uuid::new_v4();
+    sqlx::query!(
+        "INSERT INTO jobs (id, project_id, name, description, business_model, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        job_id,
+        project_id,
+        "Test Job",
+        "Test Job Description (for Get)",
+        BusinessModel::Media as BusinessModel,
+        Utc::now(),
+        Utc::now(),
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    // Act
+    let req = Request::builder()
+        .uri(format!("/projects/{}/jobs/{}", project_id, job_id))
+        .method("GET")
+        .header("Authorization", format!("Bearer {}", token))
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.oneshot(req).await.unwrap();
+
+    // Assert
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body_bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let body: Value = serde_json::from_slice(&body_bytes).unwrap();
+
+    assert_eq!(body["id"], job_id.to_string());
+    assert_eq!(body["name"], "Test Job");
+    assert_eq!(body["description"], "Test Job Description (for Get)");
+
+    let expected_model = serde_json::to_value(BusinessModel::Media).unwrap();
+    assert_eq!(body["business_model"], expected_model);
 }

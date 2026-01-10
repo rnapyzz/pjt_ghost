@@ -59,3 +59,23 @@ pub async fn create_user_and_get_token(pool: &PgPool) -> (String, Uuid) {
 
     (token, user_id)
 }
+
+// テスト用のプロジェクトを作成し、project_idを返す関数
+pub async fn create_test_project(pool: &PgPool, user_id: Uuid) -> Uuid {
+    let project_id = Uuid::new_v4();
+    sqlx::query!(
+        "INSERT INTO projects (id, name, description, owner_id, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6)",
+        project_id,
+        "Get Test Project",
+        "Get Test Project Description",
+        user_id,
+        Utc::now(),
+        Utc::now(),
+    )
+    .execute(pool)
+    .await
+    .expect("Failed to create test project");
+
+    project_id
+}
