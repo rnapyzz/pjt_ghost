@@ -44,3 +44,28 @@ async fn test_create_project_success(pool: PgPool) {
     );
     assert!(body["id"].is_string());
 }
+
+#[sqlx::test]
+async fn test_create_project_unauthorized(pool: PgPool) {
+    // Arrange
+    let app = common::setup_app(pool.clone());
+    // トークンを作らない
+
+    let payload = json!({
+        "name": "Test Project",
+        "description": "This is project by unauthrized user"
+    });
+
+    // Act
+    let req = Request::builder()
+        .uri("/projects")
+        .method("POST")
+        .header("Content-Type", "application/json")
+        .body(Body::from(payload.to_string()))
+        .unwrap();
+
+    let response = app.oneshot(req).await.unwrap();
+
+    // Assert
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}
