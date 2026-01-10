@@ -2,10 +2,12 @@ use axum::{
     body::Body,
     http::{Request, StatusCode},
 };
+use chrono::Utc;
 use http_body_util::BodyExt;
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use tower::ServiceExt;
+use uuid::Uuid;
 
 mod common;
 
@@ -68,4 +70,46 @@ async fn test_create_project_unauthorized(pool: PgPool) {
 
     // Assert
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[sqlx::test]
+async fn test_list_projects(pool: PgPool) {
+    // Arrange
+    let app = common::setup_app(pool.clone());
+    let (token, user_id) = common::create_user_and_get_token(&pool).await;
+
+    sqlx::query!(
+        "INSERT INTO projects (id, name, description, owner_id, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6)",
+        Uuid::new_v4(),
+        "Existing Project",
+        "Description ... ",
+        user_id,
+        Utc::now(),
+        Utc::now(),
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    // Act
+    let req = Request::builder()
+        .uri("/projects")
+        .method("GET")
+        .header("Authorization", format!("Bearer {}", token))
+        .body(Body::empty())
+        .unwrap();
+
+    let response = app.oneshot(req).await.unwrap();
+
+    // Assert
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body_bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let body: Value = serde_json::from_slice(&body_bytes).unwrap();
+
+    assert!(body.is_array());
+    let list = body.as_array().unwrap();
+    assert_eq!(list.len(), 1);
+    assert_eq!(list[0]["name"], "Existing Project");
 }
