@@ -113,3 +113,50 @@ async fn test_list_projects(pool: PgPool) {
     assert_eq!(list.len(), 1);
     assert_eq!(list[0]["name"], "Existing Project");
 }
+
+#[sqlx::test]
+async fn test_update_project_success(pool: PgPool) {
+    // Arrange
+    let app = common::setup_app(pool.clone());
+    let (token, user_id) = common::create_user_and_get_token(&pool).await;
+
+    let project_id = Uuid::new_v4();
+    sqlx::query!(
+        "INSERT INTO projects (id, name, description, owner_id, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6)",
+        project_id,
+        "Old Name",
+        "Old Description",
+        user_id,
+        Utc::now(),
+        Utc::now()
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let payload = json!({
+        "name": "Updated Name",
+        "description": "Updated Description"
+    });
+
+    // Act
+    let req = Request::builder()
+        .uri(format!("/projects/{}", project_id))
+        .method("PATCH")
+        .header("Content-Type", "application/json")
+        .header("Authorization", format!("Bearer {}", token))
+        .body(Body::from(payload.to_string()))
+        .unwrap();
+
+    let response = app.oneshot(req).await.unwrap();
+
+    // Assert
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body_bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let body: Value = serde_json::from_slice(&body_bytes).unwrap();
+
+    assert_eq!(body["name"], "Updated Name");
+    assert_eq!(body["description"], "Updated Description");
+}
