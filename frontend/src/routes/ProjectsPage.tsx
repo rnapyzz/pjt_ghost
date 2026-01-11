@@ -1,12 +1,16 @@
-// src/routes/ProjectsPage.tsx
-
+import { useState } from "react";
 import { FolderKanban } from "lucide-react";
 import { useProjects } from "@/features/projects/api/getProjects";
 import { CreateProjectDialog } from "@/features/projects/components/CreateProjectDialog";
-import { ProjectCard } from "@/features/projects/components/ProjectCard"; // ★追加
+import { ProjectCard } from "@/features/projects/components/ProjectCard";
 
 export const ProjectPage = () => {
   const { data: projects, isLoading, isError, error } = useProjects();
+
+  // どのプロジェクトが開いているかを管理
+  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(
+    null
+  );
 
   if (isLoading) {
     return (
@@ -36,21 +40,28 @@ export const ProjectPage = () => {
         <CreateProjectDialog />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
-        {/* items-start をつけることで、展開しても他の列のカードが変に伸びないようにする */}
-
+      {/* Gridレイアウト */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start transition-all">
         {projects?.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed rounded-lg bg-card">
             <FolderKanban size={48} className="mb-4 opacity-50" />
             <p className="text-lg font-medium">No projects found</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Get started by creating your first project.
-            </p>
             <CreateProjectDialog />
           </div>
         ) : (
           projects?.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              // 自分が拡大対象なら true
+              isExpanded={project.id === expandedProjectId}
+              // クリックされたらトグルする
+              onToggleExpand={() => {
+                setExpandedProjectId((prev) =>
+                  prev === project.id ? null : project.id
+                );
+              }}
+            />
           ))
         )}
       </div>
