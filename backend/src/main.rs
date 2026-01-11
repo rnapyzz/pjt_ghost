@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .acquire_timeout(Duration::from_secs(3))
         .connect(&config.database_url)
         .await?;
-    tracing::info!("Database connecting establised");
+    tracing::info!("Database connecting established");
 
     let app = Router::new()
         .route("/", get(|| async { "Ghost API v2" }))
