@@ -2,7 +2,7 @@ use axum::{Router, routing::get};
 use std::net::{Ipv4Addr, SocketAddrV4};
 use tokio::net::TcpListener;
 
-use ghost_api::{config, db::create_pool};
+use ghost_api::{config, db};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -16,8 +16,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = config::Config::from_env()?;
 
     tracing::info!("Connecting to database ...");
-    let pool = create_pool(&config.database_url).await?;
+    let pool = db::create_pool(&config.database_url).await?;
     tracing::info!("Database connection established");
+
+    tracing::info!("Running migrations...");
+    db::migrate_run(&pool).await?;
+    tracing::info!("Migration complete");
 
     let app = Router::new()
         .route("/", get(|| async { "Ghost API v2" }))
