@@ -25,13 +25,7 @@ impl UserRepositoryImpl {
 #[async_trait::async_trait]
 impl UserRepository for UserRepositoryImpl {
     async fn create(&self, params: CreateUserParam) -> Result<User, AppError> {
-        let salt = SaltString::generate(&mut OsRng);
-        let argon2 = Argon2::default();
-        let password_hash = argon2
-            .hash_password(params.password.as_bytes(), &salt)
-            .map_err(|e| anyhow::anyhow!("Password hashing failed: {}", e))?
-            .to_string();
-
+        let password_hash = params.hash_password()?;
         let role_str = params.role.unwrap_or_default().as_str();
 
         let user = sqlx::query_as!(

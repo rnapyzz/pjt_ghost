@@ -1,3 +1,7 @@
+use argon2::{
+    Argon2,
+    password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
+};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -59,6 +63,17 @@ pub struct CreateUserParam {
     pub email: String,
     pub password: String,
     pub role: Option<UserRole>,
+}
+
+impl CreateUserParam {
+    pub fn hash_password(&self) -> anyhow::Result<String> {
+        let salt = SaltString::generate(&mut OsRng);
+        let argon2 = Argon2::default();
+        Ok(argon2
+            .hash_password(self.password.as_bytes(), &salt)
+            .map_err(|e| anyhow::anyhow!("Password hashin failed: {}", e))?
+            .to_string())
+    }
 }
 
 #[async_trait::async_trait]
