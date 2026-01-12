@@ -71,7 +71,7 @@ impl CreateUserParam {
         let argon2 = Argon2::default();
         Ok(argon2
             .hash_password(self.password.as_bytes(), &salt)
-            .map_err(|e| anyhow::anyhow!("Password hashin failed: {}", e))?
+            .map_err(|e| anyhow::anyhow!("Password hashing failed: {}", e))?
             .to_string())
     }
 }
