@@ -64,4 +64,6 @@ pub struct CreateUserParam {
 #[async_trait::async_trait]
 pub trait UserRepository: Send + Sync {
     async fn create(&self, params: CreateUserParam) -> Result<User, AppError>;
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<User>, AppError>;
+    async fn find_by_email(&self, email: &str) -> Result<Option<User>, AppError>;
 }
