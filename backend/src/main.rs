@@ -38,6 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .route("/", get(|| async { "Ghost API v2" }))
         .route("/signup", post(handlers::user::create_user))
+        .route("/users/{uid}", get(handlers::user::get_user))
         .with_state(state);
 
     let addr = SocketAddrV4::new(

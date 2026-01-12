@@ -1,10 +1,15 @@
-use axum::{Json, extract::State, http::StatusCode};
+use axum::{
+    Json,
+    extract::{Path, State},
+    http::StatusCode,
+};
 use serde::Deserialize;
+use uuid::Uuid;
 
 use crate::{
     AppState,
     domains::user::{CreateUserParam, User, UserRole},
-    error::Result,
+    error::{AppError, Result},
 };
 
 #[derive(Debug, Deserialize)]
@@ -33,4 +38,13 @@ pub async fn create_user(
     let user = state.user_repository.create(payload).await?;
 
     Ok((StatusCode::CREATED, Json(user)))
+}
+
+pub async fn get_user(State(state): State<AppState>, Path(id): Path<Uuid>) -> Result<Json<User>> {
+    let user = state.user_repository.find_by_id(id).await?;
+
+    match user {
+        Some(u) => Ok(Json(u)),
+        None => Err(AppError::NotFound(format!("User {} not found", id))),
+    }
 }
