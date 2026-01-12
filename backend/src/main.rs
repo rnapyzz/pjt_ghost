@@ -1,8 +1,14 @@
-use axum::{Router, routing::get};
-use std::net::{Ipv4Addr, SocketAddrV4};
+use axum::{
+    Router,
+    routing::{get, post},
+};
+use std::{
+    net::{Ipv4Addr, SocketAddrV4},
+    sync::Arc,
+};
 use tokio::net::TcpListener;
 
-use ghost_api::{config, db};
+use ghost_api::{AppState, config, db, handlers, repositories::user::UserRepositoryImpl};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -23,9 +29,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     db::migrate_run(&pool).await?;
     tracing::info!("Migration complete");
 
+    let user_repository = UserRepositoryImpl::new(pool.clone());
+
+    let state = AppState {
+        user_repository: Arc::new(user_repository),
+    };
+
     let app = Router::new()
         .route("/", get(|| async { "Ghost API v2" }))
-        .with_state(pool);
+        .route("/signup", post(handlers::user::create_user))
+        .route("/users/{uid}", get(handlers::user::get_user))
+        .with_state(state);
 
     let addr = SocketAddrV4::new(
         config.host.parse().unwrap_or(Ipv4Addr::new(0, 0, 0, 0)),
