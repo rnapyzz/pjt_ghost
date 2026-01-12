@@ -60,10 +60,30 @@ impl UserRepository for UserRepositoryImpl {
 
         Ok(user)
     }
-    async fn find_by_id(&self, _id: Uuid) -> Result<Option<User>, AppError> {
-        todo!();
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<User>, AppError> {
+        let user = sqlx::query_as!(
+            User,
+            r#"
+            SELECT * FROM users WHERE id = $1
+            "#,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(user)
     }
-    async fn find_by_email(&self, _email: &str) -> Result<Option<User>, AppError> {
-        todo!();
+    async fn find_by_email(&self, email: &str) -> Result<Option<User>, AppError> {
+        let user = sqlx::query_as!(
+            User,
+            r#"
+            SELECT * FROM users WHERE email = $1
+            "#,
+            email
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(user)
     }
 }
