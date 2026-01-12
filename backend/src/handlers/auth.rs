@@ -73,4 +73,3 @@ pub async fn login(
 
     Ok(Json(LoginResponse { token }))
 }
-
