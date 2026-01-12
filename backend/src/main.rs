@@ -1,5 +1,9 @@
 use axum::{
     Router,
+    http::{
+        HeaderValue, Method,
+        header::{AUTHORIZATION, CONTENT_TYPE},
+    },
     routing::{get, post},
 };
 use std::{
@@ -7,6 +11,7 @@ use std::{
     sync::Arc,
 };
 use tokio::net::TcpListener;
+use tower_http::cors::CorsLayer;
 
 use ghost_api::{AppState, config, db, handlers, repositories::user::UserRepositoryImpl};
 
@@ -33,12 +38,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let state = AppState {
         user_repository: Arc::new(user_repository),
+        jwt_secret: config.jwt_secret,
     };
+
+    let cors = CorsLayer::new()
+        .allow_origin("http://localhost:5173".parse::<HeaderValue>().unwrap())
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::PATCH,
+            Method::DELETE,
+        ])
+        .allow_headers([CONTENT_TYPE, AUTHORIZATION]);
 
     let app = Router::new()
         .route("/", get(|| async { "Ghost API v2" }))
         .route("/signup", post(handlers::user::create_user))
+        .route("/login", post(handlers::auth::login))
         .route("/users/{uid}", get(handlers::user::get_user))
+        .layer(cors)
         .with_state(state);
 
     let addr = SocketAddrV4::new(
