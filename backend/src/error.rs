@@ -24,7 +24,7 @@ pub enum AppError {
     AuthError,
 
     #[error("Internal server error")]
-    Internal,
+    Internal(#[from] anyhow::Error),
 }
 
 #[derive(Serialize)]
@@ -46,10 +46,13 @@ impl IntoResponse for AppError {
             AppError::Validation(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::AuthError => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
-            AppError::Internal => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Internal server error".to_string(),
-            ),
+            AppError::Internal(err) => {
+                tracing::error!("Internal error: {:?}", err);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Internal Server Error".to_string(),
+                )
+            }
         };
 
         (status, Json(ErrorResponse { error: message })).into_response()
