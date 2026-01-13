@@ -8,9 +8,12 @@ function App() {
       <Routes>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/projects" element={<p>This is a projects page.</p>} />
+          <Route path="/settings" element={<p>This is a setting page.</p>} />
         </Route>
 
-        {/* <Route path="/login" element={<Login />}></Route> */}
+        <Route path="/login" element={<p>Login</p>} />
+        <Route path="/signup" element={<p>Signup</p>} />
       </Routes>
     </BrowserRouter>
   );
