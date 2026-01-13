@@ -1,15 +1,21 @@
-import { Button } from "./components/ui/button";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { DashboardLayout } from "./components/ui/layout/DashboardLayout";
+import { Home } from "./pages/Home";
 
 function App() {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-100">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-blue-600 underline">
-          Tailwind v4 + shadcn!
-        </h1>
-        <Button>click me</Button>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<DashboardLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/projects" element={<p>This is a projects page.</p>} />
+          <Route path="/settings" element={<p>This is a setting page.</p>} />
+        </Route>
+
+        <Route path="/login" element={<p>Login</p>} />
+        <Route path="/signup" element={<p>Signup</p>} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
