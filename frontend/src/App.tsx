@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { DashboardLayout } from "./components/ui/layout/DashboardLayout";
 import { Home } from "./pages/Home";
+import { Signup } from "./pages/Singup";
 
 function App() {
   return (
@@ -12,8 +13,8 @@ function App() {
           <Route path="/settings" element={<p>This is a setting page.</p>} />
         </Route>
 
+        <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<p>Login</p>} />
-        <Route path="/signup" element={<p>Signup</p>} />
       </Routes>
     </BrowserRouter>
   );
