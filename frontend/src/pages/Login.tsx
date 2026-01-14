@@ -53,7 +53,9 @@ export function Login() {
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-slate-500">
-            <Link to="/signup">Sign up</Link>
+            <Link to="/signup" className="text-blue-600 hover:underline">
+              Sign up
+            </Link>
           </p>
         </CardFooter>
       </Card>
