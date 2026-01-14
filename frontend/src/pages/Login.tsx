@@ -9,9 +9,47 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { api } from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export function Login() {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (creds: typeof formData) => {
+      const res = await api.post("/login", creds);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.token);
+
+      navigate("/");
+    },
+    onError: (error: AxiosError<{ error: string }>) => {
+      alert(
+        "Login Failed: " + error.response?.data?.error ||
+          "Check your email/password"
+      );
+    },
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate(formData);
+  };
+
   return (
     <div className="flex h-screen w-full items-center justify-center bg-slate-50">
       <Card className="w-140">
@@ -22,7 +60,7 @@ export function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -30,6 +68,8 @@ export function Login() {
                 type="email"
                 placeholder="****@example.com"
                 required
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
 
@@ -43,7 +83,13 @@ export function Login() {
                   パスワードを忘れた方
                 </Link>
               </div>
-              <Input id="password" type="password" required />
+              <Input
+                id="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+              />
             </div>
 
             <Button type="submit" className="w-full">
