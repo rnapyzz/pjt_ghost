@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Button } from "../button";
 import {
   FolderKanban,
@@ -9,6 +9,13 @@ import {
 } from "lucide-react";
 
 export function DashboardLayout() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <div className="flex h-screen w-full bg-white text-slate-900">
       {/* sidebar */}
@@ -51,6 +58,7 @@ export function DashboardLayout() {
           <Button
             variant="ghost"
             className="w-full justify-start hover:text-red-700 hover:bg-red-50"
+            onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Logout
