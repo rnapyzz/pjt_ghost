@@ -4,7 +4,7 @@ use axum::{
         HeaderValue, Method,
         header::{AUTHORIZATION, CONTENT_TYPE},
     },
-    routing::{get, post},
+    routing::{delete, get, patch, post},
 };
 use std::{
     net::{Ipv4Addr, SocketAddrV4},
@@ -65,6 +65,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/themes", post(handlers::theme::create_theme))
         .route("/themes", get(handlers::theme::list_themes))
         .route("/themes/{tid}", get(handlers::theme::get_theme))
+        .route("/themes/{tid}", patch(handlers::theme::update_theme))
+        .route("/themes/{tid}", delete(handlers::theme::delete_theme))
         .route("/me", get(handlers::auth::get_current_user))
         .layer(cors)
         .with_state(state);

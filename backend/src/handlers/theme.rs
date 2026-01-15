@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     AppState,
-    domains::theme::{CreateThemeParam, Theme},
+    domains::theme::{CreateThemeParam, Theme, UpdateThemeParam},
     error::{AppError, Result},
     extractors::AuthUser,
 };
@@ -57,4 +57,41 @@ pub async fn list_themes(
     let themes = state.theme_repository.find_all().await?;
 
     Ok(Json(themes))
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct UpdateThemeRequest {
+    title: Option<String>,
+    description: Option<String>,
+    is_active: Option<bool>,
+}
+
+pub async fn update_theme(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    auth_user: AuthUser,
+    Json(payload): Json<UpdateThemeRequest>,
+) -> Result<Json<Theme>> {
+    let user_id = Uuid::parse_str(&auth_user.claims.sub).map_err(|_| AppError::AuthError)?;
+
+    let param = UpdateThemeParam {
+        title: payload.title,
+        description: payload.description,
+        is_active: payload.is_active,
+        updated_by: user_id,
+    };
+
+    let update_theme = state.theme_repository.update(id, param).await?;
+
+    Ok(Json(update_theme))
+}
+
+pub async fn delete_theme(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    _auth_user: AuthUser,
+) -> Result<StatusCode> {
+    state.theme_repository.delete(id).await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
