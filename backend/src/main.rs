@@ -57,6 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/signup", post(handlers::user::create_user))
         .route("/login", post(handlers::auth::login))
         .route("/users/{uid}", get(handlers::user::get_user))
+        .route("/me", get(handlers::auth::get_current_user))
         .layer(cors)
         .with_state(state);
 

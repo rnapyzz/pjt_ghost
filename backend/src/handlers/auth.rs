@@ -3,10 +3,13 @@ use axum::{Json, extract::State};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{EncodingKey, Header, encode};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::{
     AppState,
+    domains::user::User,
     error::{AppError, Result},
+    extractors::AuthUser,
 };
 
 #[derive(Debug, Clone, Deserialize)]
@@ -72,4 +75,46 @@ pub async fn login(
     .map_err(|e| anyhow::anyhow!("Token creation failed: {}", e))?;
 
     Ok(Json(LoginResponse { token }))
+}
+
+#[derive(Debug, Serialize)]
+pub struct UserResponse {
+    pub id: String,
+    pub employee_id: String,
+    pub username: String,
+    pub name: String,
+    pub email: String,
+    pub role: String,
+}
+
+impl From<User> for UserResponse {
+    fn from(user: User) -> Self {
+        Self {
+            id: user.id.to_string(),
+            employee_id: user.employee_id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        }
+    }
+}
+
+pub async fn get_current_user(
+    State(state): State<AppState>,
+    auth_user: AuthUser,
+) -> Result<Json<UserResponse>> {
+    let user_id = Uuid::parse_str(&auth_user.claims.sub).map_err(|_| AppError::AuthError)?;
+
+    let user = state
+        .user_repository
+        .find_by_id(user_id)
+        .await
+        .map_err(|e| {
+            tracing::error!("DB Error: {:?}", e);
+            AppError::AuthError
+        })?
+        .ok_or(AppError::NotFound(format!("User {} not found", user_id)))?;
+
+    Ok(Json(UserResponse::from(user)))
 }
