@@ -6,10 +6,14 @@ import {
   LogOut,
   Pin,
   Settings,
+  UserIcon,
 } from "lucide-react";
+import { useUser } from "@/hooks/useUser";
 
 export function DashboardLayout() {
   const navigate = useNavigate();
+
+  const { data: user, isLoading } = useUser();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -63,6 +67,25 @@ export function DashboardLayout() {
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>
+
+          {/* ユーザー情報の表示 */}
+          <div className="mt-auto pt-6 border-t border-slate-200">
+            {isLoading ? (
+              <div className="h-10 animate-pulse bg-slate-200 rounded" />
+            ) : user ? (
+              <div className="flex items-center gap-3 px-2">
+                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                  <UserIcon className="h-6 w-6" />
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-sm font-medium truncate">{user.name}</p>
+                  <p className="text-xs text-slate-500 truncate">
+                    {user.username}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </aside>
       {/* main content area */}

@@ -3,7 +3,7 @@ import { DashboardLayout } from "./components/ui/layout/DashboardLayout";
 import { Home } from "./pages/Home";
 import { Signup } from "./pages/Singup";
 import { Login } from "./pages/Login";
-import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
 
 function App() {
   return (
