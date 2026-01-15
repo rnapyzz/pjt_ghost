@@ -13,12 +13,32 @@ use crate::{
     extractors::AuthUser,
 };
 
+/// テーマ作成リクエスト
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateThemeRequest {
     title: String,
     description: Option<String>,
 }
 
+/// テーマ更新リクエスト
+#[derive(Debug, Clone, Deserialize)]
+pub struct UpdateThemeRequest {
+    title: Option<String>,
+    description: Option<String>,
+    is_active: Option<bool>,
+}
+
+/// 一覧取得 (GET /themes)
+pub async fn list_themes(
+    State(state): State<AppState>,
+    _auth_user: AuthUser,
+) -> Result<Json<Vec<Theme>>> {
+    let themes = state.theme_repository.find_all().await?;
+
+    Ok(Json(themes))
+}
+
+/// 新規作成 (POST /themes)
 pub async fn create_theme(
     State(state): State<AppState>,
     auth_user: AuthUser,
@@ -36,6 +56,7 @@ pub async fn create_theme(
     Ok((StatusCode::CREATED, Json(theme)))
 }
 
+/// 詳細取得 (GET /themes/{id})
 pub async fn get_theme(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -50,22 +71,7 @@ pub async fn get_theme(
     Ok(Json(theme))
 }
 
-pub async fn list_themes(
-    State(state): State<AppState>,
-    _auth_user: AuthUser,
-) -> Result<Json<Vec<Theme>>> {
-    let themes = state.theme_repository.find_all().await?;
-
-    Ok(Json(themes))
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct UpdateThemeRequest {
-    title: Option<String>,
-    description: Option<String>,
-    is_active: Option<bool>,
-}
-
+/// 更新 (PATCH /themes/{id})
 pub async fn update_theme(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -86,6 +92,7 @@ pub async fn update_theme(
     Ok(Json(update_theme))
 }
 
+/// 削除 (DELETE /themes/{id})
 pub async fn delete_theme(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,

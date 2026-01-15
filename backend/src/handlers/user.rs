@@ -22,6 +22,7 @@ pub struct CreateUserRequest {
     pub role: Option<UserRole>,
 }
 
+/// 新規作成 (POST /signup)
 pub async fn create_user(
     State(state): State<AppState>,
     Json(payload): Json<CreateUserRequest>,
@@ -40,6 +41,7 @@ pub async fn create_user(
     Ok((StatusCode::CREATED, Json(user)))
 }
 
+/// 詳細取得 (GET /users/{id})
 pub async fn get_user(State(state): State<AppState>, Path(id): Path<Uuid>) -> Result<Json<User>> {
     let user = state.user_repository.find_by_id(id).await?;
 
