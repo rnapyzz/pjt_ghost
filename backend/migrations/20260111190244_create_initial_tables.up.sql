@@ -22,7 +22,7 @@ CREATE TABLE themes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(200) NOT NULL,
     description TEXT,
-    is_active BOOLEAN DEFAULT TRUE,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
 
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),

@@ -13,7 +13,10 @@ use std::{
 use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
 
-use ghost_api::{AppState, config, db, handlers, repositories::user::UserRepositoryImpl};
+use ghost_api::{
+    AppState, config, db, handlers,
+    repositories::{theme::ThemeRepositoryImpl, user::UserRepositoryImpl},
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -35,9 +38,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("Migration complete");
 
     let user_repository = UserRepositoryImpl::new(pool.clone());
+    let theme_repository = ThemeRepositoryImpl::new(pool.clone());
 
     let state = AppState {
         user_repository: Arc::new(user_repository),
+        theme_repository: Arc::new(theme_repository),
         jwt_secret: config.jwt_secret,
     };
 
@@ -57,6 +62,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/signup", post(handlers::user::create_user))
         .route("/login", post(handlers::auth::login))
         .route("/users/{uid}", get(handlers::user::get_user))
+        .route("/themes", post(handlers::theme::create_theme))
+        .route("/themes", get(handlers::theme::list_themes))
+        .route("/themes/{tid}", get(handlers::theme::get_theme))
         .route("/me", get(handlers::auth::get_current_user))
         .layer(cors)
         .with_state(state);
