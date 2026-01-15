@@ -32,6 +32,30 @@ pub struct Claims {
     pub name: String,
 }
 
+#[derive(Debug, Serialize)]
+pub struct UserResponse {
+    pub id: String,
+    pub employee_id: String,
+    pub username: String,
+    pub name: String,
+    pub email: String,
+    pub role: String,
+}
+
+impl From<User> for UserResponse {
+    fn from(user: User) -> Self {
+        Self {
+            id: user.id.to_string(),
+            employee_id: user.employee_id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        }
+    }
+}
+
+/// ログイン (POST /login)
 pub async fn login(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>,
@@ -77,29 +101,7 @@ pub async fn login(
     Ok(Json(LoginResponse { token }))
 }
 
-#[derive(Debug, Serialize)]
-pub struct UserResponse {
-    pub id: String,
-    pub employee_id: String,
-    pub username: String,
-    pub name: String,
-    pub email: String,
-    pub role: String,
-}
-
-impl From<User> for UserResponse {
-    fn from(user: User) -> Self {
-        Self {
-            id: user.id.to_string(),
-            employee_id: user.employee_id,
-            username: user.username,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-        }
-    }
-}
-
+/// ログインユーザーの詳細取得 (GET /me)
 pub async fn get_current_user(
     State(state): State<AppState>,
     auth_user: AuthUser,
