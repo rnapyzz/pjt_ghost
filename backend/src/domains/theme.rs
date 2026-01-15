@@ -25,9 +25,19 @@ pub struct CreateThemeParam {
     pub created_by: Uuid,
 }
 
+#[derive(Debug, Clone)]
+pub struct UpdateThemeParam {
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub is_active: Option<bool>,
+    pub updated_by: Uuid,
+}
+
 #[async_trait::async_trait]
 pub trait ThemeRepository: Send + Sync {
     async fn create(&self, params: CreateThemeParam) -> Result<Theme, AppError>;
     async fn find_by_id(&self, id: Uuid) -> Result<Option<Theme>, AppError>;
     async fn find_all(&self) -> Result<Vec<Theme>, AppError>;
+    async fn update(&self, id: Uuid, params: UpdateThemeParam) -> Result<Theme, AppError>;
+    async fn delete(&self, id: Uuid) -> Result<(), AppError>;
 }

@@ -2,7 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
-    domains::theme::{CreateThemeParam, Theme, ThemeRepository},
+    domains::theme::{CreateThemeParam, Theme, ThemeRepository, UpdateThemeParam},
     error::AppError,
 };
 
@@ -62,5 +62,50 @@ impl ThemeRepository for ThemeRepositoryImpl {
         .await?;
 
         Ok(themes)
+    }
+
+    async fn update(&self, id: Uuid, params: UpdateThemeParam) -> Result<Theme, AppError> {
+        let theme = sqlx::query_as!(
+            Theme,
+            r#"
+            UPDATE themes
+            SET
+                title = COALESCE($1, title),
+                description = COALESCE($2, description),
+                is_active = COALESCE($3, is_active),
+                updated_by = $4,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $5
+            RETURNING *
+            "#,
+            params.title,
+            params.description,
+            params.is_active,
+            params.updated_by,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await?
+        .ok_or(AppError::NotFound(format!("Theme {} not found", id)))?;
+
+        Ok(theme)
+    }
+
+    async fn delete(&self, id: Uuid) -> Result<(), AppError> {
+        let result = sqlx::query!(
+            r#"
+            DELETE FROM themes
+            WHERE id = $1
+            "#,
+            id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            return Err(AppError::NotFound(format!("Theme {} not found", id)));
+        }
+
+        Ok(())
     }
 }
