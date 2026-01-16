@@ -1,0 +1,9 @@
+FROM rust:1.90
+
+WORKDIR /app
+
+RUN cargo install cargo-watch sqlx-cli
+
+# TODO: ビルド時間対策
+
+CMD sqlx migrate run && cargo watch -x run
