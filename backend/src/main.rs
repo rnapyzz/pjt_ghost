@@ -15,7 +15,9 @@ use tower_http::cors::CorsLayer;
 
 use ghost_api::{
     AppState, config, db, handlers,
-    repositories::{theme::ThemeRepositoryImpl, user::UserRepositoryImpl},
+    repositories::{
+        service::ServiceRepositoryImpl, theme::ThemeRepositoryImpl, user::UserRepositoryImpl,
+    },
 };
 
 #[tokio::main]
@@ -39,10 +41,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let user_repository = UserRepositoryImpl::new(pool.clone());
     let theme_repository = ThemeRepositoryImpl::new(pool.clone());
+    let service_repository = ServiceRepositoryImpl::new(pool.clone());
 
     let state = AppState {
         user_repository: Arc::new(user_repository),
         theme_repository: Arc::new(theme_repository),
+        service_repository: Arc::new(service_repository),
         jwt_secret: config.jwt_secret,
     };
 
@@ -67,6 +71,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/themes/{tid}", get(handlers::theme::get_theme))
         .route("/themes/{tid}", patch(handlers::theme::update_theme))
         .route("/themes/{tid}", delete(handlers::theme::delete_theme))
+        .route("/services", get(handlers::service::list_service))
+        .route("/services", post(handlers::service::create_service))
+        .route(
+            "/services/{identifier}",
+            get(handlers::service::get_service),
+        )
+        .route(
+            "/services/{identifier}",
+            patch(handlers::service::update_service),
+        )
+        .route(
+            "/services/{identifier}",
+            delete(handlers::service::delete_service),
+        )
         .route("/me", get(handlers::auth::get_current_user))
         .layer(cors)
         .with_state(state);
