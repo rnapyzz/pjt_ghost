@@ -26,10 +26,20 @@ pub struct CreateServiceParam {
     pub created_by: Uuid,
 }
 
+#[derive(Debug, Clone)]
+pub struct UpdateServiceParam {
+    pub slug: Option<String>,
+    pub name: Option<String>,
+    pub owner_id: Option<Uuid>,
+    pub updated_by: Uuid,
+}
+
 #[async_trait::async_trait]
 pub trait ServiceRepository: Send + Sync {
     async fn create(&self, params: CreateServiceParam) -> Result<Service, AppError>;
     async fn find_all(&self) -> Result<Vec<Service>, AppError>;
     async fn find_by_id(&self, id: Uuid) -> Result<Option<Service>, AppError>;
     async fn find_by_slug(&self, slug: &str) -> Result<Option<Service>, AppError>;
+    async fn update(&self, id: Uuid, params: UpdateServiceParam) -> Result<Service, AppError>;
+    async fn delete(&self, id: Uuid) -> Result<(), AppError>;
 }

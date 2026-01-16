@@ -2,7 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
-    domains::service::{CreateServiceParam, Service, ServiceRepository},
+    domains::service::{CreateServiceParam, Service, ServiceRepository, UpdateServiceParam},
     error::AppError,
 };
 
@@ -47,6 +47,7 @@ impl ServiceRepository for ServiceRepositoryImpl {
 
         Ok(service)
     }
+
     async fn find_all(&self) -> Result<Vec<Service>, AppError> {
         let services = sqlx::query_as!(
             Service,
@@ -59,6 +60,7 @@ impl ServiceRepository for ServiceRepositoryImpl {
 
         Ok(services)
     }
+
     async fn find_by_id(&self, id: Uuid) -> Result<Option<Service>, AppError> {
         let service = sqlx::query_as!(
             Service,
@@ -73,6 +75,7 @@ impl ServiceRepository for ServiceRepositoryImpl {
 
         Ok(service)
     }
+
     async fn find_by_slug(&self, slug: &str) -> Result<Option<Service>, AppError> {
         let service = sqlx::query_as!(
             Service,
@@ -86,5 +89,47 @@ impl ServiceRepository for ServiceRepositoryImpl {
         .await?;
 
         Ok(service)
+    }
+
+    async fn update(&self, id: Uuid, params: UpdateServiceParam) -> Result<Service, AppError> {
+        let service = sqlx::query_as!(
+            Service,
+            r#"
+            UPDATE services
+            SET
+                slug = COALESCE($1, slug),
+                name = COALESCE($2, name),
+                owner_id = COALESCE($3, owner_id),
+                updated_by = $4,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $5
+            RETURNING *
+            "#,
+            params.slug,
+            params.name,
+            params.owner_id,
+            params.updated_by,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to update service: {:?}", e);
+            AppError::from(e)
+        })?
+        .ok_or(AppError::NotFound(format!("Service {} not found", id)))?;
+
+        Ok(service)
+    }
+    async fn delete(&self, id: Uuid) -> Result<(), AppError> {
+        let result = sqlx::query!(r#"DELETE FROM services WHERE id = $1"#, id)
+            .execute(&self.pool)
+            .await?;
+
+        if result.rows_affected() == 0 {
+            return Err(AppError::NotFound(format!("Service {} not found", id)));
+        }
+
+        Ok(())
     }
 }

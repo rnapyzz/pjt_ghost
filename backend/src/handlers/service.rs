@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::{
     AppState,
-    domains::service::{CreateServiceParam, Service},
+    domains::service::{CreateServiceParam, Service, UpdateServiceParam},
     error::{AppError, Result},
     extractors::AuthUser,
 };
@@ -19,6 +19,13 @@ pub struct CreateServiceRequest {
     pub name: String,
     pub slug: Option<String>,
     pub owner_id: Option<Uuid>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateServiceRequest {
+    name: Option<String>,
+    slug: Option<String>,
+    owner_id: Option<Uuid>,
 }
 
 pub async fn list_service(
@@ -71,4 +78,46 @@ pub async fn get_service(
     )))?;
 
     Ok(Json(service))
+}
+
+pub async fn update_service(
+    State(state): State<AppState>,
+    Path(identifier): Path<String>,
+    auth_user: AuthUser,
+    Json(payload): Json<UpdateServiceRequest>,
+) -> Result<Json<Service>> {
+    let service_id = Uuid::parse_str(&identifier).map_err(|_| {
+        AppError::BadRequest("Updating by slug is not allowed. Please use ID.".to_string())
+    })?;
+
+    let user_id = Uuid::parse_str(&auth_user.claims.sub).map_err(|_| AppError::AuthError)?;
+    let slug = match payload.slug {
+        Some(s) if !s.trim().is_empty() => Some(s),
+        _ => None,
+    };
+
+    let param = UpdateServiceParam {
+        name: payload.name,
+        slug,
+        owner_id: payload.owner_id,
+        updated_by: user_id,
+    };
+
+    let service = state.service_repository.update(service_id, param).await?;
+
+    Ok(Json(service))
+}
+
+pub async fn delete_service(
+    State(state): State<AppState>,
+    Path(identifier): Path<String>,
+    _auth_user: AuthUser,
+) -> Result<StatusCode> {
+    let service_id = Uuid::parse_str(&identifier).map_err(|_| {
+        AppError::BadRequest("Deleting by slug is not allowed. Please use ID".to_string())
+    })?;
+
+    state.service_repository.delete(service_id).await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
