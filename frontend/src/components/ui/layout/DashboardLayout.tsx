@@ -23,9 +23,9 @@ export function DashboardLayout() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-white text-slate-900">
+    <div className="flex h-screen w-full overflow-hidden bg-white text-slate-900">
       {/* sidebar */}
-      <aside className="w-48 bg-slate-100 border-r flex flex-col p-4">
+      <aside className="w-48 bg-slate-100 border-r flex flex-col p-4 shrink-0 overflow-y-auto">
         {/* logo */}
         <div className="mb-8 pl-4">
           <h1 className="text-2xl font-bold tracking-tight">Ghost;</h1>
@@ -108,8 +108,12 @@ export function DashboardLayout() {
         </div>
       </aside>
       {/* main content area */}
-      <main className="flex-1 overflow-auto bg-white p-8">
-        <Outlet />
+      <main className="flex-1 flex flex-col min-w-0 bg-white overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-8 [scrollbar-gutter:stable]">
+          <div className="mx-auto max-w-7xl">
+            <Outlet />
+          </div>
+        </div>
       </main>
     </div>
   );
