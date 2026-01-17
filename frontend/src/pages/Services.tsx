@@ -1,3 +1,4 @@
+import { CreateServiceDialog } from "@/features/services/components/CreateServiceDialog";
 import { ServiceCard } from "@/features/services/components/ServiceCard";
 import { ServiceTable } from "@/features/services/components/ServiceTable";
 import { useServices } from "@/features/services/hooks/useServices";
@@ -37,7 +38,7 @@ export function Services() {
         </div>
         {/* create button */}
         <button
-          onClick={() => console.log("not implemented")}
+          onClick={() => setIsCreateOpen(true)}
           className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-mediunm text-white shadow hover:bg-slate-800 transition-colors"
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -116,7 +117,10 @@ export function Services() {
       )}
 
       {/* dialog */}
-      <div></div>
+      <CreateServiceDialog
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+      />
     </div>
   );
 }

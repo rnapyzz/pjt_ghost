@@ -14,7 +14,7 @@ export function useServices() {
 }
 
 // 新規作成
-export function useCreateServices(onSuccess?: () => void) {
+export function useCreateService(onSuccess?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
