@@ -1,9 +1,9 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Button } from "../button";
 import {
+  Box,
   FlagTriangleRight,
   FolderKanban,
-  Gift,
   LayoutDashboard,
   LogOut,
   Pin,
@@ -57,7 +57,7 @@ export function DashboardLayout() {
           {/* services */}
           <Button variant="ghost" className="w-full justify-start" asChild>
             <Link to="/services">
-              <Gift className="mr-2 h-4 w-4" />
+              <Box className="mr-2 h-4 w-4" />
               Services
             </Link>
           </Button>

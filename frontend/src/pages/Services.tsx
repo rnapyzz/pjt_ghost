@@ -104,7 +104,10 @@ export function Services() {
           </div>
         ) : (
           // table view
-          <ServiceTable />
+          <ServiceTable
+            services={filteredServices}
+            onClick={(slug) => navigate(`/services/${slug}`)}
+          />
         )
       ) : (
         <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center">
