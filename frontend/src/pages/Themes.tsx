@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { CreateThemeDialog } from "@/features/themes/components/CreateThemeDialog";
 import { ThemeCard } from "@/features/themes/components/ThemeCard";
 import { useThemes } from "@/features/themes/hooks/useThemes";
 import { Loader2, Plus, Search } from "lucide-react";
@@ -52,12 +52,13 @@ export function Themes() {
       {/* Filter Area */}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-        <Input
+        <input
           type="text"
           placeholder="Search themes ..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-md border border-slate-200 pl-9 pr-4 py-2 text-sm "
+          className="w-full rounded-md border border-slate-200 pl-9 pr-4 py-2 text-sm
+              focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
 
@@ -79,8 +80,10 @@ export function Themes() {
       )}
 
       {/* Create Model */}
-      {/* TODO */}
-      <div>....</div>
+      <CreateThemeDialog
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+      />
     </div>
   );
 }
