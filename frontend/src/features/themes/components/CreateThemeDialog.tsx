@@ -97,10 +97,10 @@ export function CreateThemeDialog({ isOpen, onClose }: Props) {
             <button
               type="submit"
               disabled={isPending}
-              className="flex items-center rounded-md bg-slate-900 px-4 py-2 font-sm text-white hover:bg-slate-800 disabled:opacity-50"
+              className="flex items-center rounded-md bg-slate-900 px-4 py-2 font-sm text-white  font-medium hover:bg-slate-800 disabled:opacity-50"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Theme
+              Create
             </button>
           </div>
         </form>
