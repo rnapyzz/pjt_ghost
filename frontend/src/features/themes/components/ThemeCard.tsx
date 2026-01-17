@@ -10,7 +10,7 @@ export function ThemeCard({ theme, onClick }: Props) {
   return (
     <div
       onClick={() => onClick(theme.id)}
-      className="group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white py-2 px-4 shadow-xs transition-all hover:shadow-md hover:border-slate-300 cursor-pointer"
+      className="group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white py-2 px-4 shadow-xs transition-all hover:shadow-xs hover:shadow-blue-900 hover:border-slate-300 cursor-pointer"
     >
       {/* ステータスバッジ */}
       <div className="absolute top-2 right-4">
