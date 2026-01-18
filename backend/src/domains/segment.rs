@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{prelude::FromRow, types::Json};
+use sqlx::{FromRow, types::Json};
 use uuid::Uuid;
 
 use crate::error::AppError;
@@ -16,7 +16,7 @@ pub struct Segment {
     pub id: Uuid,
     pub slug: String,
     pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     pub ui_config: Json<SegmentUiConfig>,
 
     pub created_by: Option<Uuid>,
