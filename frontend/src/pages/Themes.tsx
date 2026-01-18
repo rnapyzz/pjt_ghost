@@ -27,7 +27,7 @@ export function Themes() {
 
   // Load Error
   if (error) {
-    return <div className="p-4 text-red-500">Failed to load themes</div>;
+    return <div className="p-4 text-red-500">Sorry, failed to load themes</div>;
   }
 
   return (
