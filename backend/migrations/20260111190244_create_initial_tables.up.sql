@@ -61,7 +61,7 @@ CREATE TABLE services (
 -- Projects
 CREATE TABLE projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    theme_id UUID REFERENCE themes(id),
+    theme_id UUID REFERENCES themes(id),
     name VARCHAR(200) NOT NULL,
     description TEXT,
     type VARCHAR(100) NOT NULL DEFAULT 'Normal',
