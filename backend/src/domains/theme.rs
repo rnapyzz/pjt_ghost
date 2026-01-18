@@ -32,7 +32,7 @@ pub struct UpdateThemeParam {
     pub title: Option<String>,
     pub description: Option<String>,
     pub is_active: Option<bool>,
-    pub segument_id: Option<Uuid>,
+    pub segment_id: Option<Uuid>,
     pub updated_by: Uuid,
 }
 

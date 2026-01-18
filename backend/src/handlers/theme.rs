@@ -18,6 +18,7 @@ use crate::{
 pub struct CreateThemeRequest {
     title: String,
     description: Option<String>,
+    segment_id: Option<Uuid>,
 }
 
 /// テーマ更新リクエスト
@@ -26,6 +27,7 @@ pub struct UpdateThemeRequest {
     title: Option<String>,
     description: Option<String>,
     is_active: Option<bool>,
+    segment_id: Option<Uuid>,
 }
 
 /// 一覧取得 (GET /themes)
@@ -48,6 +50,7 @@ pub async fn create_theme(
     let param = CreateThemeParam {
         title: payload.title,
         description: payload.description,
+        segment_id: payload.segment_id,
         created_by: user_id,
     };
 
@@ -84,6 +87,7 @@ pub async fn update_theme(
         title: payload.title,
         description: payload.description,
         is_active: payload.is_active,
+        segment_id: payload.segment_id,
         updated_by: user_id,
     };
 
