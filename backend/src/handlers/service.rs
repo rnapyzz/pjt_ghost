@@ -19,7 +19,7 @@ pub struct CreateServiceRequest {
     pub name: String,
     pub slug: Option<String>,
     pub owner_id: Option<Uuid>,
-    pub segment_id: Option<Uuid>,
+    pub segment_id: Uuid,
 }
 
 #[derive(Debug, Deserialize)]
