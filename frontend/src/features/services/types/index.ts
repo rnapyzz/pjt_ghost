@@ -3,6 +3,7 @@ export type Service = {
   slug: string;
   name: string;
   owner_id?: string;
+  segment_id: string;
 
   created_by?: string;
   updated_by?: string;
@@ -10,7 +11,9 @@ export type Service = {
   updated_at: string;
 };
 
-export type CreateServiceInput = {
+export type CreateServicePayload = {
   name: string;
   slug?: string;
+  owner_id?: string;
+  segment_id: string;
 };

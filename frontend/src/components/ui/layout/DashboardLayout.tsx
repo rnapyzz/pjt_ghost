@@ -54,6 +54,20 @@ export function DashboardLayout() {
               Themes
             </Link>
           </Button>
+          {/* projects */}
+          <Button variant="ghost" className="w-full justify-start" asChild>
+            <Link to="/projects">
+              <FolderKanban className="mr-2 h-4 w-4" />
+              Projects
+            </Link>
+          </Button>
+          {/* segments */}
+          <Button variant="ghost" className="w-full justify-start" asChild>
+            <Link to="/segments">
+              <FolderKanban className="mr-2 h-4 w-4" />
+              Segments
+            </Link>
+          </Button>
           {/* services */}
           <Button variant="ghost" className="w-full justify-start" asChild>
             <Link to="/services">
@@ -61,11 +75,11 @@ export function DashboardLayout() {
               Services
             </Link>
           </Button>
-          {/* projects */}
+          {/* jobs */}
           <Button variant="ghost" className="w-full justify-start" asChild>
-            <Link to="/projects">
+            <Link to="/jobs">
               <FolderKanban className="mr-2 h-4 w-4" />
-              Projects
+              Jobs
             </Link>
           </Button>
         </nav>

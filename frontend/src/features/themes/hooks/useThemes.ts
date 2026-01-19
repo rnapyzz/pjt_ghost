@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CreateThemeInput, Theme } from "../types";
+import type { CreateThemePayload, Theme } from "../types";
 
 // 一覧取得フック
 export function useThemes() {
@@ -18,7 +18,7 @@ export function useCreateTheme(onSuccess?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CreateThemeInput) => {
+    mutationFn: async (input: CreateThemePayload) => {
       const { data } = await api.post<Theme>("/themes", input);
       return data;
     },
