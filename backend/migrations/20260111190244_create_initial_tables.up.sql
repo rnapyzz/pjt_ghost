@@ -89,7 +89,7 @@ CREATE TABLE jobs (
 
     title VARCHAR(200) NOT NULL,
     description TEXT,
-    status VARCHAR(200) DEFAULT 'Draft',
+    status VARCHAR(200) DEFAULT 'Draft' NOT NULL,
     owner_id UUID REFERENCES users(id),
 
     created_by UUID REFERENCES users(id),

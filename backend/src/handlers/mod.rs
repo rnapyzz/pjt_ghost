@@ -1,4 +1,5 @@
 pub mod auth;
+pub mod job;
 pub mod project;
 pub mod segment;
 pub mod service;
