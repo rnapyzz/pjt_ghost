@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
-use crate::domains::{service::ServiceRepository, theme::ThemeRepository, user::UserRepository};
+use crate::domains::{
+    segment::SegmentRepository, service::ServiceRepository, theme::ThemeRepository,
+    user::UserRepository,
+};
 
 pub mod config;
 pub mod db;
@@ -14,6 +17,7 @@ pub mod repositories;
 pub struct AppState {
     pub user_repository: Arc<dyn UserRepository>,
     pub theme_repository: Arc<dyn ThemeRepository>,
+    pub segment_repository: Arc<dyn SegmentRepository>,
     pub service_repository: Arc<dyn ServiceRepository>,
     pub jwt_secret: String,
 }

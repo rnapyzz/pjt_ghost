@@ -23,12 +23,13 @@ impl ThemeRepository for ThemeRepositoryImpl {
         let theme = sqlx::query_as!(
             Theme,
             r#"
-            INSERT INTO themes (title, description, created_by, updated_by)
-            VALUES ($1, $2, $3, $3)
+            INSERT INTO themes (title, description, segment_id, created_by, updated_by)
+            VALUES ($1, $2, $3, $4, $4)
             RETURNING *
             "#,
             params.title,
             params.description,
+            params.segment_id,
             params.created_by,
         )
         .fetch_one(&self.pool)
@@ -73,14 +74,16 @@ impl ThemeRepository for ThemeRepositoryImpl {
                 title = COALESCE($1, title),
                 description = COALESCE($2, description),
                 is_active = COALESCE($3, is_active),
-                updated_by = $4,
+                segment_id = COALESCE($4, segment_id),
+                updated_by = $5,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $5
+            WHERE id = $6
             RETURNING *
             "#,
             params.title,
             params.description,
             params.is_active,
+            params.segment_id,
             params.updated_by,
             id
         )

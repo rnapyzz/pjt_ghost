@@ -27,15 +27,17 @@ impl ServiceRepository for ServiceRepositoryImpl {
                 slug,
                 name,
                 owner_id,
+                segment_id,
                 created_by,
                 updated_by
             )
-            VALUES ($1, $2, $3, $4, $4)
+            VALUES ($1, $2, $3, $4, $5, $5)
             RETURNING *
             "#,
             params.slug,
             params.name,
             params.owner_id,
+            params.segment_id,
             params.created_by,
         )
         .fetch_one(&self.pool)
@@ -100,14 +102,16 @@ impl ServiceRepository for ServiceRepositoryImpl {
                 slug = COALESCE($1, slug),
                 name = COALESCE($2, name),
                 owner_id = COALESCE($3, owner_id),
-                updated_by = $4,
+                segment_id = COALESCE($4, segment_id),
+                updated_by = $5,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $5
+            WHERE id = $6
             RETURNING *
             "#,
             params.slug,
             params.name,
             params.owner_id,
+            params.segment_id,
             params.updated_by,
             id
         )

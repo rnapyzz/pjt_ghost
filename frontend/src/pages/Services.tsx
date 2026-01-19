@@ -2,7 +2,7 @@ import { CreateServiceDialog } from "@/features/services/components/CreateServic
 import { ServiceCard } from "@/features/services/components/ServiceCard";
 import { ServiceTable } from "@/features/services/components/ServiceTable";
 import { useServices } from "@/features/services/hooks/useServices";
-import { LayoutGrid, List, Plus, Search } from "lucide-react";
+import { LayoutGrid, List, Loader2, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -22,9 +22,19 @@ export function Services() {
       s.slug.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  if (isLoading) return <div>aaaa</div>;
-  if (error) return <div>bbbb</div>;
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
+  if (error) {
+    return (
+      <div className="p-4 text-red-500">Sorry, failed to load services</div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* header */}

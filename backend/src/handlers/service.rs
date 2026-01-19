@@ -19,6 +19,7 @@ pub struct CreateServiceRequest {
     pub name: String,
     pub slug: Option<String>,
     pub owner_id: Option<Uuid>,
+    pub segment_id: Option<Uuid>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -26,6 +27,7 @@ pub struct UpdateServiceRequest {
     name: Option<String>,
     slug: Option<String>,
     owner_id: Option<Uuid>,
+    segment_id: Option<Uuid>,
 }
 
 pub async fn list_service(
@@ -53,6 +55,7 @@ pub async fn create_service(
         name: payload.name,
         slug: slug,
         owner_id: payload.owner_id,
+        segment_id: payload.segment_id,
         created_by: user_id,
     };
 
@@ -100,6 +103,7 @@ pub async fn update_service(
         name: payload.name,
         slug,
         owner_id: payload.owner_id,
+        segment_id: payload.segment_id,
         updated_by: user_id,
     };
 

@@ -16,7 +16,8 @@ use tower_http::cors::CorsLayer;
 use ghost_api::{
     AppState, config, db, handlers,
     repositories::{
-        service::ServiceRepositoryImpl, theme::ThemeRepositoryImpl, user::UserRepositoryImpl,
+        segment::SegmentRepositoryImpl, service::ServiceRepositoryImpl, theme::ThemeRepositoryImpl,
+        user::UserRepositoryImpl,
     },
 };
 
@@ -41,11 +42,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let user_repository = UserRepositoryImpl::new(pool.clone());
     let theme_repository = ThemeRepositoryImpl::new(pool.clone());
+    let segment_repository = SegmentRepositoryImpl::new(pool.clone());
     let service_repository = ServiceRepositoryImpl::new(pool.clone());
 
     let state = AppState {
         user_repository: Arc::new(user_repository),
         theme_repository: Arc::new(theme_repository),
+        segment_repository: Arc::new(segment_repository),
         service_repository: Arc::new(service_repository),
         jwt_secret: config.jwt_secret,
     };
@@ -71,6 +74,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/themes/{tid}", get(handlers::theme::get_theme))
         .route("/themes/{tid}", patch(handlers::theme::update_theme))
         .route("/themes/{tid}", delete(handlers::theme::delete_theme))
+        .route("/segments", get(handlers::segment::create_segment))
+        .route("/segments", post(handlers::segment::list_segment))
         .route("/services", get(handlers::service::list_service))
         .route("/services", post(handlers::service::create_service))
         .route(

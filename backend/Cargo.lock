@@ -658,6 +658,7 @@ dependencies = [
  "jsonwebtoken",
  "rand_core 0.9.3",
  "serde",
+ "serde_json",
  "slug",
  "sqlx",
  "thiserror",

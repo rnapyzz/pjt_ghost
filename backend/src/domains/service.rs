@@ -11,6 +11,7 @@ pub struct Service {
     pub slug: String,
     pub name: String,
     pub owner_id: Option<Uuid>,
+    pub segment_id: Option<Uuid>,
 
     pub created_by: Option<Uuid>,
     pub updated_by: Option<Uuid>,
@@ -23,6 +24,7 @@ pub struct CreateServiceParam {
     pub slug: String,
     pub name: String,
     pub owner_id: Option<Uuid>,
+    pub segment_id: Option<Uuid>,
     pub created_by: Uuid,
 }
 
@@ -31,6 +33,7 @@ pub struct UpdateServiceParam {
     pub slug: Option<String>,
     pub name: Option<String>,
     pub owner_id: Option<Uuid>,
+    pub segment_id: Option<Uuid>,
     pub updated_by: Uuid,
 }
 

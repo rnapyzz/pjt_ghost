@@ -11,6 +11,7 @@ pub struct Theme {
     pub title: String,
     pub description: Option<String>,
     pub is_active: bool,
+    pub segment_id: Option<Uuid>,
 
     pub created_by: Option<Uuid>,
     pub updated_by: Option<Uuid>,
@@ -22,6 +23,7 @@ pub struct Theme {
 pub struct CreateThemeParam {
     pub title: String,
     pub description: Option<String>,
+    pub segment_id: Option<Uuid>,
     pub created_by: Uuid,
 }
 
@@ -30,6 +32,7 @@ pub struct UpdateThemeParam {
     pub title: Option<String>,
     pub description: Option<String>,
     pub is_active: Option<bool>,
+    pub segment_id: Option<Uuid>,
     pub updated_by: Uuid,
 }
 
