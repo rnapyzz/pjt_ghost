@@ -16,7 +16,7 @@ use tower_http::cors::CorsLayer;
 use ghost_api::{
     AppState, config, db, handlers,
     repositories::{
-        project::ProjectRepositoryImpl, segment::SegmentRepositoryImpl,
+        job::JobRepositoryImpl, project::ProjectRepositoryImpl, segment::SegmentRepositoryImpl,
         service::ServiceRepositoryImpl, theme::ThemeRepositoryImpl, user::UserRepositoryImpl,
     },
 };
@@ -45,6 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let project_repository = ProjectRepositoryImpl::new(pool.clone());
     let segment_repository = SegmentRepositoryImpl::new(pool.clone());
     let service_repository = ServiceRepositoryImpl::new(pool.clone());
+    let job_repository = JobRepositoryImpl::new(pool.clone());
 
     let state = AppState {
         user_repository: Arc::new(user_repository),
@@ -52,6 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         project_repository: Arc::new(project_repository),
         segment_repository: Arc::new(segment_repository),
         service_repository: Arc::new(service_repository),
+        job_repository: Arc::new(job_repository),
         jwt_secret: config.jwt_secret,
     };
 
@@ -94,6 +96,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "/services/{identifier}",
             delete(handlers::service::delete_service),
         )
+        .route("/jobs", get(handlers::job::list_jobs))
+        .route("/jobs", post(handlers::job::create_job))
         .route("/me", get(handlers::auth::get_current_user))
         .layer(cors)
         .with_state(state);
