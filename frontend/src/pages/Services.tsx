@@ -63,7 +63,7 @@ export function Services() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder=""
+            placeholder="Search Services ..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-md border border-slate-200 pl-9 pr-4 py-2 text-sm

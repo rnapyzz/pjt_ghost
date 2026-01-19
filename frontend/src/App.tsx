@@ -16,8 +16,10 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/themes" element={<Themes />} />
-            <Route path="/services" element={<Services />} />
             <Route path="/projects" element={<p>This is a projects page.</p>} />
+            <Route path="/segments" element={<p>This is a segments page.</p>} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/jobs" element={<p>This is a jobs page.</p>} />
             <Route path="/settings" element={<></>} />
           </Route>
         </Route>

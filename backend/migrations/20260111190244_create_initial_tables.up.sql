@@ -52,7 +52,7 @@ CREATE TABLE services (
     slug VARCHAR(50) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     owner_id UUID REFERENCES users(id),
-    segment_id UUID REFERENCES segments(id),
+    segment_id UUID NOT NULL REFERENCES segments(id),
 
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
