@@ -30,7 +30,7 @@ pub struct CreateSegmentParam {
     pub slug: String,
     pub name: String,
     pub description: Option<String>,
-    pub ui_config: Option<SegmentUiConfig>,
+    pub ui_config: SegmentUiConfig,
     pub created_by: Uuid,
 }
 

@@ -19,7 +19,7 @@ impl SegmentRepositoryImpl {
 #[async_trait::async_trait]
 impl SegmentRepository for SegmentRepositoryImpl {
     async fn create(&self, params: CreateSegmentParam) -> Result<Segment, AppError> {
-        let ui_config = Json(params.ui_config.unwrap_or_default());
+        let ui_config = Json(params.ui_config);
 
         let segment = sqlx::query_as!(
             Segment,
@@ -38,7 +38,7 @@ impl SegmentRepository for SegmentRepositoryImpl {
                 slug,
                 name,
                 description,
-                ui_config as "ui_config!: Json<SegmentUiConfig>",
+                ui_config as "ui_config: Json<SegmentUiConfig>",
                 created_by,
                 updated_by,
                 created_at,
@@ -69,7 +69,7 @@ impl SegmentRepository for SegmentRepositoryImpl {
                 slug,
                 name,
                 description,
-                ui_config as "ui_config!: Json<SegmentUiConfig>",
+                ui_config as "ui_config: Json<SegmentUiConfig>",
                 created_by,
                 updated_by,
                 created_at,

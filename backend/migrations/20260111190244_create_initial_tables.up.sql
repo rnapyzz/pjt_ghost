@@ -24,7 +24,7 @@ CREATE TABLE segments  (
     name VARCHAR(100) NOT NULL,
     description TEXT,
 
-    ui_config JSONB DEFAULT '{}'::jsonb,
+    ui_config JSONB NOT NULL DEFAULT '{}'::jsonb,
     
     created_by UUID REFERENCES users(id),
     updated_by UUID REFERENCES users(id),
@@ -68,7 +68,7 @@ CREATE TABLE projects (
     description TEXT,
 
     type VARCHAR(100) NOT NULL DEFAULT 'Normal',
-    attributes JSONB DEFAULT '{}'::jsonb,
+    attributes JSONB NOT NULL DEFAULT '{}'::jsonb,
 
     is_active BOOLEAN DEFAULT TRUE NOT NULL,
     owner_id UUID REFERENCES users(id),

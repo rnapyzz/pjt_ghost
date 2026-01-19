@@ -36,7 +36,7 @@ pub async fn create_segment(
         slug: payload.slug,
         name: payload.name,
         description: payload.description,
-        ui_config: payload.ui_config,
+        ui_config: payload.ui_config.unwrap_or_default(),
         created_by: user_id,
     };
 
