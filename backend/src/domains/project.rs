@@ -70,7 +70,7 @@ pub struct CreateProjectParam {
 }
 
 #[async_trait::async_trait]
-pub trait ProjectRepositoryImpl: Send + Sync {
+pub trait ProjectRepository: Send + Sync {
     async fn create(&self, params: CreateProjectParam) -> Result<Project, AppError>;
     async fn find_all(&self) -> Result<Vec<Project>, AppError>;
 }
