@@ -4,6 +4,7 @@ import {
   Box,
   FlagTriangleRight,
   FolderKanban,
+  Layers,
   LayoutDashboard,
   LogOut,
   Pin,
@@ -64,7 +65,7 @@ export function DashboardLayout() {
           {/* segments */}
           <Button variant="ghost" className="w-full justify-start" asChild>
             <Link to="/segments">
-              <FolderKanban className="mr-2 h-4 w-4" />
+              <Layers className="mr-2 h-4 w-4" />
               Segments
             </Link>
           </Button>

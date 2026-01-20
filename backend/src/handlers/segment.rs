@@ -1,5 +1,6 @@
 use axum::{Json, extract::State, http::StatusCode};
 use serde::Deserialize;
+use slug::slugify;
 use uuid::Uuid;
 
 use crate::{
@@ -11,7 +12,7 @@ use crate::{
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateSegmentRequest {
-    slug: String,
+    slug: Option<String>,
     name: String,
     description: Option<String>,
     ui_config: Option<SegmentUiConfig>,
@@ -32,9 +33,14 @@ pub async fn create_segment(
 ) -> Result<(StatusCode, Json<Segment>)> {
     let user_id = Uuid::parse_str(&auth_user.claims.sub).map_err(|_| AppError::AuthError)?;
 
+    let slug = match payload.slug {
+        Some(s) if !s.trim().is_empty() => s,
+        _ => slugify(&payload.name),
+    };
+
     let param = CreateSegmentParam {
-        slug: payload.slug,
         name: payload.name,
+        slug,
         description: payload.description,
         ui_config: payload.ui_config.unwrap_or_default(),
         created_by: user_id,

@@ -117,7 +117,7 @@ export function CreateServiceDialog({ isOpen, onClose }: Props) {
             </button>
             <button
               type="submit"
-              disabled={isPending || !segmentId}
+              disabled={isPending || !name || !segmentId}
               className="flex items-center rounded-md bg-slate-900 px-4 py-2 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-40 disabled:bg-slate-900"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

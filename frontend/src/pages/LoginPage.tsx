@@ -15,7 +15,7 @@ import type { AxiosError } from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export function Login() {
+export function LoginPage() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -36,7 +36,7 @@ export function Login() {
     onError: (error: AxiosError<{ error: string }>) => {
       alert(
         "Login Failed: " + error.response?.data?.error ||
-          "Check your email/password"
+          "Check your email/password",
       );
     },
   });
