@@ -7,6 +7,7 @@ import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
 import { ThemesPage } from "./pages/ThemesPage";
 import { ServicesPage } from "./pages/ServicesPage";
 import { SegmentsPage } from "./pages/SegmentsPage";
+import { JobsPage } from "./pages/JobsPage";
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
             <Route path="/projects" element={<p>This is a projects page.</p>} />
             <Route path="/segments" element={<SegmentsPage />} />
             <Route path="/services" element={<ServicesPage />} />
-            <Route path="/jobs" element={<p>This is a jobs page.</p>} />
+            <Route path="/jobs" element={<JobsPage />} />
             <Route path="/settings" element={<></>} />
           </Route>
         </Route>
