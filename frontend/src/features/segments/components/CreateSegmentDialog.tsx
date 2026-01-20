@@ -65,7 +65,7 @@ export function CreateSegmentDialog({ isOpen, onClose }: Props) {
           {/* slug */}
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
-              Slug <span className="text-red-500">*</span>
+              Slug
             </label>
             <input
               type="text"
@@ -103,7 +103,7 @@ export function CreateSegmentDialog({ isOpen, onClose }: Props) {
             </button>
             <button
               type="submit"
-              disabled={isPending || !name || !slug}
+              disabled={isPending || !name}
               className="flex items-center rounded-md bg-slate-900 px-4 py-2 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-40"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
