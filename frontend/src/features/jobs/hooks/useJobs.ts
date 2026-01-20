@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CreateJobPayload, Job } from "../types";
 
-export function useJons() {
+export function useJobs() {
   return useQuery({
     queryKey: ["jobs"],
     queryFn: async () => {
