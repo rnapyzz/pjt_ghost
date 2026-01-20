@@ -6,7 +6,7 @@ import { LayoutGrid, List, Loader2, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export function Services() {
+export function ServicesPage() {
   const navigate = useNavigate();
   // ページを開いた時にデータを取得
   const { data: services, isLoading, error } = useServices();

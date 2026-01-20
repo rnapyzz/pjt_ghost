@@ -5,7 +5,7 @@ import { Loader2, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export function Themes() {
+export function ThemesPage() {
   const navigate = useNavigate();
   const { data: themes, isLoading, error } = useThemes();
   const [searchQuery, setSearchQuery] = useState("");

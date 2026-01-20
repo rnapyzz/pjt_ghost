@@ -15,7 +15,7 @@ import type { AxiosError } from "axios";
 import { useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export function Signup() {
+export function SignupPage() {
   const navigate = useNavigate();
 
   // フォームの入力値管理
@@ -40,7 +40,7 @@ export function Signup() {
       console.log(error);
       alert(
         "Failed to create account. " +
-          (error.response?.data?.error || "Unknown error")
+          (error.response?.data?.error || "Unknown error"),
       );
     },
   });

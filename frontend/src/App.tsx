@@ -1,11 +1,12 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { DashboardLayout } from "./components/ui/layout/DashboardLayout";
 import { Home } from "./pages/Home";
-import { Signup } from "./pages/Singup";
-import { Login } from "./pages/Login";
+import { SignupPage } from "./pages/SingupPage";
+import { LoginPage } from "./pages/LoginPage";
 import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
-import { Themes } from "./pages/Themes";
-import { Services } from "./pages/Services";
+import { ThemesPage } from "./pages/ThemesPage";
+import { ServicesPage } from "./pages/ServicesPage";
+import { SegmentsPage } from "./pages/SegmentsPage";
 
 function App() {
   return (
@@ -15,18 +16,18 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/themes" element={<Themes />} />
+            <Route path="/themes" element={<ThemesPage />} />
             <Route path="/projects" element={<p>This is a projects page.</p>} />
-            <Route path="/segments" element={<p>This is a segments page.</p>} />
-            <Route path="/services" element={<Services />} />
+            <Route path="/segments" element={<SegmentsPage />} />
+            <Route path="/services" element={<ServicesPage />} />
             <Route path="/jobs" element={<p>This is a jobs page.</p>} />
             <Route path="/settings" element={<></>} />
           </Route>
         </Route>
 
         {/* 公開ルート */}
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </BrowserRouter>
   );
