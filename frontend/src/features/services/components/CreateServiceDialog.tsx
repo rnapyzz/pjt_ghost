@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCreateService } from "../hooks/useServices";
 import { Loader2, X } from "lucide-react";
+import { useSegments } from "@/features/segments/hooks/useSegments";
 
 type Props = {
   isOpen: boolean;
@@ -10,17 +11,21 @@ type Props = {
 export function CreateServiceDialog({ isOpen, onClose }: Props) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [segmentId, setSegmentId] = useState("");
+
+  const { data: segments, isLoading: isLoadingSegments } = useSegments();
 
   const { mutate, isPending } = useCreateService(() => {
     setName("");
     setSlug("");
+    setSegmentId("");
     onClose();
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) return;
-    mutate({ name, slug: slug || undefined });
+    if (!name || !segmentId) return;
+    mutate({ name, slug: slug || undefined, segment_id: segmentId });
   };
 
   if (!isOpen) return null;
@@ -40,6 +45,33 @@ export function CreateServiceDialog({ isOpen, onClose }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* segment */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Segment <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={segmentId}
+              onChange={(e) => setSegmentId(e.target.value)}
+              className="w-full appearance-none rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-500"
+              required
+              disabled={isLoadingSegments}
+            >
+              <option value="" disabled>
+                Select a segment...
+              </option>
+              {segments?.map((segment) => (
+                <option key={segment.id} value={segment.id}>
+                  {segment.name}
+                </option>
+              ))}
+            </select>
+            {isLoadingSegments && (
+              <div>
+                <Loader2 />
+              </div>
+            )}
+          </div>
           {/* name */}
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
@@ -85,8 +117,8 @@ export function CreateServiceDialog({ isOpen, onClose }: Props) {
             </button>
             <button
               type="submit"
-              disabled={isPending}
-              className="flex items-center rounded-md bg-slate-900 px-4 py-2 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50"
+              disabled={isPending || !segmentId}
+              className="flex items-center rounded-md bg-slate-900 px-4 py-2 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-40 disabled:bg-slate-900"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create
