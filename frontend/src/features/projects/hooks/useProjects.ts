@@ -24,5 +24,8 @@ export function useCreateProject(onSuccess?: () => void) {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       if (onSuccess) onSuccess();
     },
+    onError: (error) => {
+      console.error("Crate Project Error:", error);
+    },
   });
 }

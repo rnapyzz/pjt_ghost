@@ -16,7 +16,7 @@ export function JobsPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="mb-8 max-w-7xl mx-auto">
       {/* Header  */}
       <div className="mb-8 flex items-center justify-between">
         <div>
