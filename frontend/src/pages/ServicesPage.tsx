@@ -35,6 +35,7 @@ export function ServicesPage() {
       <div className="p-4 text-red-500">Sorry, failed to load services</div>
     );
   }
+
   return (
     <div className="space-y-6">
       {/* header */}
