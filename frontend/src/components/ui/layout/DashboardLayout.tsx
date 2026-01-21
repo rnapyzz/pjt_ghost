@@ -45,7 +45,7 @@ export function DashboardLayout() {
           <Button variant="ghost" className="w-full justify-start" asChild>
             <Link to="/">
               <LayoutDashboard className="mr-2 h-4 w-4" />
-              Dashboard
+              Matrix View
             </Link>
           </Button>
           {/* themes */}
