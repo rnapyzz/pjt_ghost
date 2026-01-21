@@ -8,6 +8,7 @@ import { ThemesPage } from "./pages/ThemesPage";
 import { ServicesPage } from "./pages/ServicesPage";
 import { SegmentsPage } from "./pages/SegmentsPage";
 import { JobsPage } from "./pages/JobsPage";
+import { ProjectsPage } from "./pages/ProjectsPage";
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/themes" element={<ThemesPage />} />
-            <Route path="/projects" element={<p>This is a projects page.</p>} />
+            <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/segments" element={<SegmentsPage />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/jobs" element={<JobsPage />} />
