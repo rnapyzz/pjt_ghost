@@ -8,14 +8,21 @@ import { Briefcase, Layers, Target, X } from "lucide-react";
 export type Props = {
   isOpen: boolean;
   onClose: () => void;
+  defaultServiceId?: string;
+  defaultProjectId?: string;
 };
 
-export function CreateJobDialog({ isOpen, onClose }: Props) {
+export function CreateJobDialog({
+  isOpen,
+  onClose,
+  defaultServiceId,
+  defaultProjectId,
+}: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  const [serviceId, setServiceId] = useState("");
-  const [projectId, setProjectId] = useState("");
+  const [serviceId, setServiceId] = useState(defaultServiceId || "");
+  const [projectId, setProjectId] = useState(defaultProjectId || "");
   const [themeId, setThemeId] = useState("");
 
   const { data: services } = useServices();
