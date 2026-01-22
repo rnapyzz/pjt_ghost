@@ -10,11 +10,16 @@ import { SegmentsPage } from "./pages/SegmentsPage";
 import { JobsPage } from "./pages/JobsPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
 import { MatrixPage } from "./pages/MatrixPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* 公開ルート */}
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+
         {/* 保護ルート */}
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
@@ -29,9 +34,8 @@ function App() {
           </Route>
         </Route>
 
-        {/* 公開ルート */}
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        {/* catch-all route */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
