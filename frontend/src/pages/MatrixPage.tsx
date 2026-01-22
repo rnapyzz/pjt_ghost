@@ -1,7 +1,9 @@
+import { CreateJobDialog } from "@/features/jobs/components/CreateJobDialog";
 import { useJobs } from "@/features/jobs/hooks/useJobs";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { useServices } from "@/features/services/hooks/useServices";
 import { Loader2, Plus } from "lucide-react";
+import { useState } from "react";
 
 export function MatrixPage() {
   const { data: services, isLoading: isLoadingServices } = useServices();
@@ -9,6 +11,11 @@ export function MatrixPage() {
   const { data: jobs, isLoading: isLoadingJobs } = useJobs();
 
   const isLoading = isLoadingServices || isLoadingProjects || isLoadingJobs;
+
+  const [selectedCell, setSelectedCell] = useState<{
+    serviceId: string;
+    projectId?: string;
+  } | null>(null);
 
   if (isLoading) {
     return (
@@ -113,16 +120,25 @@ export function MatrixPage() {
                                 {job.status}
                               </span>
                             </div>
+                            {/* 追加ボタン */}
                           </div>
                         ))}
 
-                        {jobsForCell.length === 0 && (
-                          <div className="h-full min-h-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                            <button className="text-slate-400 hover:text-blue-600">
-                              <Plus className="h-5 w-5" />
-                            </button>
-                          </div>
-                        )}
+                        {/* 追加ボタン */}
+                        <div className="h-full min-h-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() =>
+                              setSelectedCell({
+                                serviceId: service.id,
+                                projectId: project.id,
+                              })
+                            }
+                            className="flex items-center justify-center h-8 w-8 rounded-full hover:bg-blue-100 text-slate-400 hover:text-blue-600 transition-colors"
+                            title="Add Job to this context"
+                          >
+                            <Plus className="h-5 w-5" />
+                          </button>
+                        </div>
                       </div>
                     </td>
                   );
@@ -134,11 +150,25 @@ export function MatrixPage() {
                     {getNoProjectJobs(service.id).map((job) => (
                       <div
                         key={job.id}
-                        className="rounded border border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 p-2 text-slate-500 hover:text-blue-500"
+                        className="rounded border border-dashed border-slate-300 bg-slate-50 hover:bg-blue-100 p-2 text-slate-500 hover:text-blue-500"
                       >
                         <div className="text-sm">{job.title}</div>
                       </div>
                     ))}
+                  </div>
+
+                  <div className="mt-2 flex justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() =>
+                        setSelectedCell({
+                          serviceId: service.id,
+                          projectId: undefined,
+                        })
+                      }
+                      className="flex items-center justify-center h-8 w-8 rounded-full hover:bg-blue-100 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <Plus className="h-5 w-5" />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -146,6 +176,15 @@ export function MatrixPage() {
           </tbody>
         </table>
       </div>
+
+      {selectedCell && (
+        <CreateJobDialog
+          isOpen={true}
+          onClose={() => setSelectedCell(null)}
+          defaultServiceId={selectedCell?.serviceId}
+          defaultProjectId={selectedCell?.projectId}
+        />
+      )}
     </div>
   );
 }
