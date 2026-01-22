@@ -9,6 +9,7 @@ import { ServicesPage } from "./pages/ServicesPage";
 import { SegmentsPage } from "./pages/SegmentsPage";
 import { JobsPage } from "./pages/JobsPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
+import { MatrixPage } from "./pages/MatrixPage";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         {/* 保護ルート */}
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
+            <Route index element={<MatrixPage />} />
             <Route path="/" element={<Home />} />
             <Route path="/themes" element={<ThemesPage />} />
             <Route path="/projects" element={<ProjectsPage />} />

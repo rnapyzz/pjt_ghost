@@ -42,7 +42,7 @@ export function CreateThemeDialog({ isOpen, onClose }: Props) {
   // コンポーネントの定義
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-50">
-      <div className="w-full max-w-lg rounded-md bg-white p-6 shadow-xl animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-lg rounded-md bg-white p-6 shadow-md animate-in zoom-in-95 duration-200">
         {/* コンポーネントのヘッダ */}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-900">Create New Theme</h2>
