@@ -2,7 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
-    domains::job::{CreateJobParam, Job, JobRepository},
+    domains::job::{CreateJobParam, Job, JobRepository, UpdateJobParam},
     error::AppError,
 };
 
@@ -88,5 +88,56 @@ impl JobRepository for JobRepositoryImpl {
         .await?;
 
         Ok(job)
+    }
+
+    async fn update(&self, id: Uuid, params: UpdateJobParam) -> Result<Job, AppError> {
+        let job = sqlx::query_as!(
+            Job,
+            r#"
+        UPDATE jobs
+        SET
+            service_id = COALESCE($1, service_id),
+            project_id = COALESCE($2, project_id),
+            theme_id = COALESCE($3, theme_id),
+            title = COALESCE($4, title),
+            description = COALESCE($5, description),
+            status = COALESCE($6, status),
+            owner_id = COALESCE($7, owner_id),
+            updated_by = $8
+        WHERE id = $9
+        RETURNING *
+        "#,
+            params.service_id,
+            params.project_id,
+            params.theme_id,
+            params.title,
+            params.description,
+            params.status,
+            params.owner_id,
+            params.updated_by,
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(job)
+    }
+
+    async fn delete(&self, id: Uuid) -> Result<(), AppError> {
+        let result = sqlx::query!(
+            r#"
+            DELETE FROM jobs
+            WHERE id = $1
+            "#,
+            id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            return Err(AppError::NotFound(format!("Job {} not found", id)));
+        }
+
+        Ok(())
     }
 }
