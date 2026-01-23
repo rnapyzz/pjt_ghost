@@ -40,4 +40,5 @@ pub struct CreateJobParam {
 pub trait JobRepository: Send + Sync {
     async fn create(&self, params: CreateJobParam) -> Result<Job, AppError>;
     async fn find_all(&self) -> Result<Vec<Job>, AppError>;
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Job>, AppError>;
 }

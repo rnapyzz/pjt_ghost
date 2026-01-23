@@ -1,4 +1,7 @@
-use axum::{Json, extract::State};
+use axum::{
+    Json,
+    extract::{Path, State},
+};
 use serde::Deserialize;
 use uuid::Uuid;
 
@@ -56,4 +59,17 @@ pub async fn create_job(
     let job = state.job_repository.create(param).await?;
 
     Ok(Json(job))
+}
+
+pub async fn get_job(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    _auth_user: AuthUser,
+) -> Result<Json<Job>> {
+    let job = state.job_repository.find_by_id(id).await?;
+
+    match job {
+        Some(j) => Ok(Json(j)),
+        None => Err(AppError::NotFound(format!("Job '{}' not found", id))),
+    }
 }
