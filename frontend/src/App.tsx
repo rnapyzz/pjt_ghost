@@ -11,6 +11,7 @@ import { JobsPage } from "./pages/JobsPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
 import { MatrixPage } from "./pages/MatrixPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { JobDetailPage } from "./pages/JobDetailPage";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/segments" element={<SegmentsPage />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/jobs" element={<JobsPage />} />
+            <Route path="/jobs/:jobId" element={<JobDetailPage />} />
             <Route path="/settings" element={<></>} />
           </Route>
         </Route>

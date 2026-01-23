@@ -1,4 +1,5 @@
 use sqlx::PgPool;
+use uuid::Uuid;
 
 use crate::{
     domains::job::{CreateJobParam, Job, JobRepository},
@@ -72,5 +73,20 @@ impl JobRepository for JobRepositoryImpl {
         .await?;
 
         Ok(jobs)
+    }
+
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Job>, AppError> {
+        let job = sqlx::query_as!(
+            Job,
+            r#"
+            SELECT * FROM jobs
+            WHERE id = $1
+            "#,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(job)
     }
 }

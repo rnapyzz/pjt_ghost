@@ -4,6 +4,7 @@ import { useProjects } from "@/features/projects/hooks/useProjects";
 import { useServices } from "@/features/services/hooks/useServices";
 import { Loader2, Plus } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export function MatrixPage() {
   const { data: services, isLoading: isLoadingServices } = useServices();
@@ -113,7 +114,12 @@ export function MatrixPage() {
                             className="group relative rounded border border-slate-200 bg-white p-2 shadow-sm hover:border-blue-300 hover:shadow-md transition-all text-slate-900 hover:text-blue-500"
                           >
                             <div className="text-sm font-medium">
-                              {job.title}
+                              <Link
+                                to={`/jobs/${job.id}`}
+                                className="text-sm font-medium text-slate-900 hover:text-blue-600 hover:underline"
+                              >
+                                {job.title}
+                              </Link>
                             </div>
                             <div className="mt-1 flex items-center justify-between">
                               <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">
@@ -152,7 +158,14 @@ export function MatrixPage() {
                         key={job.id}
                         className="rounded border border-dashed border-slate-300 bg-slate-50 hover:bg-blue-100 p-2 text-slate-500 hover:text-blue-500"
                       >
-                        <div className="text-sm">{job.title}</div>
+                        <div className="text-sm">
+                          <Link
+                            to={`/jobs/${job.id}`}
+                            className="text-sm font-medium text-slate-900 hover:text-blue-600 hover:underline"
+                          >
+                            {job.title}
+                          </Link>
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -2,6 +2,7 @@ import { CreateJobDialog } from "@/features/jobs/components/CreateJobDialog";
 import { useJobs } from "@/features/jobs/hooks/useJobs";
 import { Briefcase, Calendar, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export function JobsPage() {
   const { data: jobs, isLoading } = useJobs();
@@ -61,7 +62,12 @@ export function JobsPage() {
               <tr key={job.id} className="hover:bg-slate-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-slate-900">
-                    {job.title}
+                    <Link
+                      to={`/jobs/${job.id}`}
+                      className="text-sm font-medium text-slate-900 hover:text-blue-600 hover:underline"
+                    >
+                      {job.title}
+                    </Link>
                   </div>
                   {job.description && (
                     <div className="text-xs text-slate-500 truncate max-w-xs">
