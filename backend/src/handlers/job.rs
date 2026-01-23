@@ -1,13 +1,14 @@
 use axum::{
     Json,
     extract::{Path, State},
+    http::StatusCode,
 };
 use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
     AppState,
-    domains::job::{CreateJobParam, Job},
+    domains::job::{CreateJobParam, Job, UpdateJobParam},
     error::{AppError, Result},
     extractors::AuthUser,
 };
@@ -24,6 +25,19 @@ pub struct CreateJobRequest {
     pub status: String,
 
     pub owner_id: Option<Uuid>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateJobRequest {
+    pub service_id: Option<Uuid>,
+    pub project_id: Option<Uuid>,
+    pub theme_id: Option<Uuid>,
+
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub status: Option<String>,
+    pub owner_id: Option<Uuid>,
+    pub updated_by: Option<Uuid>,
 }
 
 fn default_status() -> String {
@@ -72,4 +86,40 @@ pub async fn get_job(
         Some(j) => Ok(Json(j)),
         None => Err(AppError::NotFound(format!("Job '{}' not found", id))),
     }
+}
+
+// 更新 (PATCH /jobs/{id})
+pub async fn update_job(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    auth_user: AuthUser,
+    Json(payload): Json<UpdateJobRequest>,
+) -> Result<Json<Job>> {
+    let user_id = Uuid::parse_str(&auth_user.claims.sub).map_err(|_| AppError::AuthError)?;
+
+    let param = UpdateJobParam {
+        service_id: payload.service_id,
+        project_id: payload.project_id,
+        theme_id: payload.theme_id,
+        title: payload.title,
+        description: payload.description,
+        status: payload.status,
+        owner_id: payload.owner_id,
+        updated_by: user_id,
+    };
+
+    let update_job = state.job_repository.update(id, param).await?;
+
+    Ok(Json(update_job))
+}
+
+// 削除 (DELET /jobs/{id})
+pub async fn delete_job(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    _auth_user: AuthUser,
+) -> Result<StatusCode> {
+    state.job_repository.delete(id).await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }

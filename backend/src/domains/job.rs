@@ -46,7 +46,7 @@ pub struct UpdateJobParam {
     pub description: Option<String>,
     pub status: Option<String>,
     pub owner_id: Option<Uuid>,
-    pub updated_by: Option<Uuid>,
+    pub updated_by: Uuid,
 }
 
 #[async_trait::async_trait]
