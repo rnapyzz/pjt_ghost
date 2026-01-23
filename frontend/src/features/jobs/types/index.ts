@@ -22,3 +22,14 @@ export type CreateJobPayload = {
   status?: string;
   owner_id?: string;
 };
+
+export type UpdateJobPayload = {
+  id: string;
+  service_id?: string;
+  project_id?: string;
+  theme_id?: string;
+  title?: string;
+  description?: string;
+  status?: string;
+  owner_id?: string;
+};
