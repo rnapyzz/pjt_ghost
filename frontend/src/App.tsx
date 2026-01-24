@@ -12,6 +12,7 @@ import { ProjectsPage } from "./pages/ProjectsPage";
 import { MatrixPage } from "./pages/MatrixPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { JobDetailPage } from "./pages/JobDetailPage";
+import { ProjectPlanPage } from "./features/projects/pages/ProjectPlanPage";
 
 function App() {
   return (
@@ -28,6 +29,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/themes" element={<ThemesPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
+            <Route
+              path="/projects/:projectId/plan"
+              element={<ProjectPlanPage />}
+            />
             <Route path="/segments" element={<SegmentsPage />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/jobs" element={<JobsPage />} />

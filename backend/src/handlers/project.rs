@@ -55,6 +55,20 @@ pub async fn list_projects(
     Ok(Json(projects))
 }
 
+pub async fn get_project(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    _auth_user: AuthUser,
+) -> Result<Json<Project>> {
+    let project = state
+        .project_repository
+        .find_by_id(id)
+        .await?
+        .ok_or(AppError::NotFound(format!("Project {} not found", id)))?;
+
+    Ok(Json(project))
+}
+
 pub async fn create_project(
     State(state): State<AppState>,
     auth_user: AuthUser,

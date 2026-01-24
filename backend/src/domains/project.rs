@@ -99,6 +99,7 @@ pub struct UpdateProjectParam {
 pub trait ProjectRepository: Send + Sync {
     async fn create(&self, params: CreateProjectParam) -> Result<Project, AppError>;
     async fn find_all(&self) -> Result<Vec<Project>, AppError>;
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Project>, AppError>;
     async fn update(&self, id: Uuid, params: UpdateProjectParam) -> Result<Project, AppError>;
     async fn delete(&self, id: Uuid) -> Result<(), AppError>;
 }
