@@ -1,7 +1,8 @@
 use sqlx::{PgPool, types::Json};
+use uuid::Uuid;
 
 use crate::{
-    domains::project::{CreateProjectParam, Project, ProjectRepository},
+    domains::project::{CreateProjectParam, Project, ProjectRepository, UpdateProjectParam},
     error::AppError,
 };
 
@@ -30,20 +31,28 @@ impl ProjectRepository for ProjectRepositoryImpl {
                 theme_id,
                 name,
                 description,
-                type,
                 attributes,
+                type,
+                target_market,
+                value_prop,
+                target_client,
+                kpis,
                 owner_id,
                 created_by,
                 updated_by
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $7)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11)
             RETURNING
                 id,
                 theme_id,
                 name,
                 description,
-                type as "project_type",
                 attributes as "attributes: Json<serde_json::Value>",
+                type as "project_type",
+                target_market,
+                value_prop,
+                target_client,
+                kpis,
                 is_active,
                 owner_id,
                 created_by,
@@ -54,15 +63,19 @@ impl ProjectRepository for ProjectRepositoryImpl {
             params.theme_id,
             params.name,
             params.description,
-            type_str,
             attributes as Json<serde_json::Value>,
+            type_str,
+            params.target_market,
+            params.value_prop,
+            params.target_client,
+            params.kpis,
             params.owner_id,
             params.created_by
         )
         .fetch_one(&self.pool)
         .await
         .map_err(|e| {
-            tracing::error!("Database error: {:?}", e);
+            tracing::error!("Failed to create project: {:?}", e);
             AppError::from(e)
         })?;
 
@@ -78,8 +91,12 @@ impl ProjectRepository for ProjectRepositoryImpl {
                 theme_id,
                 name,
                 description,
-                type as "project_type",
                 attributes as "attributes: Json<serde_json::Value>",
+                type as "project_type",
+                target_market,
+                value_prop,
+                target_client,
+                kpis,
                 is_active,
                 owner_id,
                 created_by,
@@ -91,8 +108,71 @@ impl ProjectRepository for ProjectRepositoryImpl {
             "#,
         )
         .fetch_all(&self.pool)
-        .await?;
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to find projects: {:?}", e);
+            AppError::from(e)
+        })?;
 
         Ok(projects)
+    }
+
+    async fn update(&self, id: Uuid, params: UpdateProjectParam) -> Result<Project, AppError> {
+        let type_str = params.project_type.map(|t| t.to_string());
+
+        let project = sqlx::query_as!(
+            Project,
+            r#"
+            UPDATE projects
+            SET
+                theme_id = COALESCE($1, theme_id),
+                name = COALESCE($2, name),
+                description = COALESCE($3, description),
+                attributes = COALESCE($4, attributes),
+                type = COALESCE($5, type),
+                target_market = COALESCE($6, target_market),
+                value_prop = COALESCE($7, value_prop),
+                target_client = COALESCE($8, target_client),
+                kpis = COALESCE($9, kpis),
+                is_active = COALESCE($10, is_active),
+                owner_id = COALESCE($11, owner_id),
+                updated_by = $12            
+            WHERE id = $13
+            RETURNING
+                id, 
+                theme_id,
+                name,
+                description,
+                attributes as "attributes: Json<serde_json::Value>",
+                type as "project_type",
+                target_market,
+                value_prop,
+                target_client,
+                kpis,
+                is_active,
+                owner_id,
+                created_by,
+                updated_by,
+                created_at,
+                updated_at
+            "#,
+            params.theme_id,
+            params.name,
+            params.description,
+            params.attributes,
+            type_str,
+            params.target_market,
+            params.value_prop,
+            params.target_client,
+            params.kpis,
+            params.is_active,
+            params.owner_id,
+            params.updated_by,
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(project)
     }
 }
