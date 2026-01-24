@@ -36,9 +36,13 @@ pub struct Project {
     pub theme_id: Option<Uuid>,
     pub name: String,
     pub description: Option<String>,
+    pub attributes: Json<serde_json::Value>,
 
     pub project_type: String,
-    pub attributes: Json<serde_json::Value>,
+    pub target_market: Option<String>,
+    pub value_prop: Option<String>,
+    pub target_client: Option<String>,
+    pub kpis: Option<String>,
 
     pub is_active: bool,
     pub owner_id: Option<Uuid>,
@@ -61,16 +65,40 @@ pub struct CreateProjectParam {
     pub theme_id: Option<Uuid>,
     pub name: String,
     pub description: Option<String>,
+    pub attributes: Option<serde_json::Value>,
 
     pub project_type: ProjectType,
-    pub attributes: Option<serde_json::Value>,
+    pub target_market: Option<String>,
+    pub value_prop: Option<String>,
+    pub target_client: Option<String>,
+    pub kpis: Option<String>,
 
     pub owner_id: Option<Uuid>,
     pub created_by: Uuid,
+}
+
+#[derive(Debug, Clone)]
+pub struct UpdateProjectParam {
+    pub theme_id: Option<Uuid>,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub attributes: Option<serde_json::Value>,
+
+    pub project_type: Option<ProjectType>,
+    pub target_market: Option<String>,
+    pub value_prop: Option<String>,
+    pub target_client: Option<String>,
+    pub kpis: Option<String>,
+
+    pub is_active: Option<bool>,
+    pub owner_id: Option<Uuid>,
+    pub updated_by: Uuid,
 }
 
 #[async_trait::async_trait]
 pub trait ProjectRepository: Send + Sync {
     async fn create(&self, params: CreateProjectParam) -> Result<Project, AppError>;
     async fn find_all(&self) -> Result<Vec<Project>, AppError>;
+    async fn update(&self, id: Uuid, params: UpdateProjectParam) -> Result<Project, AppError>;
+    async fn delete(&self, id: Uuid) -> Result<(), AppError>;
 }

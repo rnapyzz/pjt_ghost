@@ -66,9 +66,13 @@ CREATE TABLE projects (
     theme_id UUID REFERENCES themes(id),
     name VARCHAR(200) NOT NULL,
     description TEXT,
+    attributes JSONB NOT NULL DEFAULT '{}'::jsonb,
 
     type VARCHAR(100) NOT NULL DEFAULT 'Normal',
-    attributes JSONB NOT NULL DEFAULT '{}'::jsonb,
+    target_market TEXT,
+    value_prop TEXT,
+    target_client TEXT,
+    kpis TEXT,
 
     is_active BOOLEAN DEFAULT TRUE NOT NULL,
     owner_id UUID REFERENCES users(id),
@@ -97,3 +101,53 @@ CREATE TABLE jobs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+
+CREATE TYPE account_type AS ENUM (
+    'Revenue',
+    'CostOfGoodsSold',
+    'SellingGeneralAdmin'
+);
+
+CREATE TABLE account_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(100) NOT NULL,
+    account_type account_type NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TYPE scenario_type AS ENUM (
+    'MasterPlan',
+    'RevisedPlan',
+    'InitialPlan',
+    'ExecPlanAdjust',
+    'JobPlan',
+    'Actual'
+);
+
+CREATE TABLE pl_entries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id),
+    job_id UUID REFERENCES jobs(id),
+    account_item_id UUID NOT NULL REFERENCES account_items(id),
+    scenario scenario_type NOT NULL,
+    date DATE NOT NULL,
+    amount DECIMAL(19, 4) NOT NULL,
+    description TEXT,
+    created_by UUID NOT NULL REFERENCES users(id),
+    updated_by UUID NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+CREATE INDEX idx_pl_entries_project_scenario ON pl_entries(project_id, scenario);
+CREATE INDEX idx_pl_entries_date ON pl_entries(date);
+
+
+-- 初期データ
+INSERT INTO account_items (name, account_type, description) VALUES
+('売上高', 'Revenue', '営業収益'),
+('売上原価', 'CostOfGoodsSold', '制作費やコンテンツ費や人件費などの売上として提供する役務の価値を直接構成するような費用'),
+('販管費', 'SellingGeneralAdmin', '売上として提供する役務の価値を直接構成するものとはいえない費用');
