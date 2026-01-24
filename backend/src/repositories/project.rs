@@ -117,6 +117,37 @@ impl ProjectRepository for ProjectRepositoryImpl {
         Ok(projects)
     }
 
+    async fn find_by_id(&self, id: Uuid) -> Result<Option<Project>, AppError> {
+        let project = sqlx::query_as!(
+            Project,
+            r#"
+            SELECT
+                id, 
+                theme_id,
+                name,
+                description,
+                attributes as "attributes: Json<serde_json::Value>",
+                type as "project_type",
+                target_market,
+                value_prop,
+                target_client,
+                kpis,
+                is_active,
+                owner_id,
+                created_by,
+                updated_by,
+                created_at,
+                updated_at
+            FROM projects WHERE id = $1
+            "#,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(project)
+    }
+
     async fn update(&self, id: Uuid, params: UpdateProjectParam) -> Result<Project, AppError> {
         let type_str = params.project_type.map(|t| t.to_string());
 
