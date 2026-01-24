@@ -45,7 +45,7 @@ export function useUpdateJob(onSuccess?: () => void) {
   return useMutation({
     mutationFn: async (payload: UpdateJobPayload) => {
       const { id, ...body } = payload;
-      const { data } = await api.put<Job>(`/jobs/${id}`, body);
+      const { data } = await api.patch<Job>(`/jobs/${id}`, body);
       return data;
     },
     onSuccess: (data) => {
@@ -67,8 +67,10 @@ export function useDeleteJob() {
   return useMutation({
     mutationFn: async (jobId: string) => {
       await api.delete(`/jobs/${jobId}`);
+      return jobId;
     },
-    onSuccess: () => {
+    onSuccess: (deletedJobId) => {
+      queryClient.removeQueries({ queryKey: ["jobs", deletedJobId] });
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       navigate("/");
     },
