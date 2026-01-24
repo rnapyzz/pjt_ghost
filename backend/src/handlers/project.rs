@@ -1,6 +1,7 @@
 use axum::{
     Json,
     extract::{Path, State},
+    http::StatusCode,
 };
 use serde::Deserialize;
 use uuid::Uuid;
@@ -106,4 +107,14 @@ pub async fn update_project(
     let project = state.project_repository.update(id, param).await?;
 
     Ok(Json(project))
+}
+
+pub async fn delete_project(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    _auth_user: AuthUser,
+) -> Result<StatusCode> {
+    state.project_repository.delete(id).await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }

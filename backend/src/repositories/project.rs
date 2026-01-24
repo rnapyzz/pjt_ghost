@@ -175,4 +175,22 @@ impl ProjectRepository for ProjectRepositoryImpl {
 
         Ok(project)
     }
+
+    async fn delete(&self, id: Uuid) -> Result<(), AppError> {
+        let result = sqlx::query!(
+            r#"
+            DELETE FROM projects
+            WHERE id = $1
+            "#,
+            id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            return Err(AppError::NotFound(format!("Project {} not found", id)));
+        }
+
+        Ok(())
+    }
 }

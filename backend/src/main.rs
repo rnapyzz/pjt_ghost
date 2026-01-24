@@ -81,6 +81,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/projects", get(handlers::project::list_projects))
         .route("/projects", post(handlers::project::create_project))
         .route("/projects/{pid}", patch(handlers::project::update_project))
+        .route("/projects/{pid}", delete(handlers::project::delete_project))
         .route("/segments", get(handlers::segment::list_segment))
         .route("/segments", post(handlers::segment::create_segment))
         .route("/services", get(handlers::service::list_service))
