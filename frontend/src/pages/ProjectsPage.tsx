@@ -4,6 +4,7 @@ import { ProjectType } from "@/features/projects/types";
 import { useThemes } from "@/features/themes/hooks/useThemes";
 import { Calendar, FolderGit2, Loader2, Plus, Target } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export function ProjectsPage() {
   const { data: projects, isLoading } = useProjects();
@@ -81,7 +82,9 @@ export function ProjectsPage() {
               {/* name */}
               <div className="flex items-center gap-2">
                 <FolderGit2 className="h-5 w-5 text-slate-400" />
-                <h3>{project.name}</h3>
+                <Link to={`/projects/${project.id}/plan`}>
+                  <h3 className="">{project.name}</h3>
+                </Link>
               </div>
 
               {/* theme link */}

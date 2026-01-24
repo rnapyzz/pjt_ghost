@@ -1,4 +1,51 @@
+import { useNavigate, useParams } from "react-router-dom";
+import { useProject, useUpdateProject } from "../hooks/useProjects";
+import { ProjectType, type UpdateProjectPayload } from "../types";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+
 export function ProjectPlanPage() {
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
+
+  const { data: project, isLoading } = useProject(projectId || "");
+  const updateMutation = useUpdateProject();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isDirty },
+  } = useForm<UpdateProjectPayload>();
+
+  useEffect(() => {
+    if (project) {
+      reset({
+        name: project.name,
+        type: project.project_type as ProjectType,
+        target_market: project.target_market || "",
+        value_prop: project.value_prop || "",
+        target_client: project.target_client || "",
+        kpis: project.kpis || "",
+      });
+    }
+  }, [project, reset]);
+
+  const onSubmit = (data: UpdateProjectPayload) => {
+    if (!projectId) return;
+
+    updateMutation.mutate(
+      { id: projectId, data },
+      {
+        onSuccess: () => {
+          alert("プロジェクト計画を保存しました！");
+        },
+      },
+    );
+  };
+
+  if (isLoading) return <div>Loading project plan...</div>;
+  if (!project) return <div>Project not found</div>;
+
   return (
     <div className="container mx-auto p-4 max-w-6xl">
       {/* header */}
@@ -12,11 +59,18 @@ export function ProjectPlanPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-1 text-gray-600 border rounded hover:bg-gray-50 text-sm">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-1 text-gray-600 border rounded hover:bg-gray-50 text-sm"
+          >
             Back
           </button>
-          <button className="px-4 py-1 bg-blue-600 border text-white rounded hover:bg-blue-700 text-sm">
-            Save
+          <button
+            onClick={handleSubmit(onSubmit)}
+            className="px-4 py-1 bg-blue-600 border text-white rounded hover:bg-blue-700 text-sm"
+            disabled={!isDirty || updateMutation.isPending}
+          >
+            {updateMutation.isPending ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -33,15 +87,25 @@ export function ProjectPlanPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Project Name
               </label>
-              <input className="w-full p-1.5 border rounded focus:ring-1 focus:outline-none focus:ring-blue-500" />
+              <input
+                {...register("name")}
+                className="w-full p-1.5 border rounded focus:ring-1 focus:outline-none focus:ring-blue-500"
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Type
               </label>
-              <select className="w-full p-1.5 border rounded focus:ring-1 focus:outline-none focus:ring-blue-500">
-                <option value=""></option>
+              <select
+                {...register("type")}
+                className="w-full p-1.5 border rounded focus:ring-1 focus:outline-none focus:ring-blue-500"
+              >
+                {Object.values(ProjectType).map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
               </select>
               <p className="text-xs text-gray-400 mt-1">
                 ※ Agile: 柔軟な変更を前提 / Normal: 計画重視
@@ -64,6 +128,7 @@ export function ProjectPlanPage() {
                   Value Proposition
                 </label>
                 <textarea
+                  {...register("value_prop")}
                   rows={3}
                   placeholder="顧客にどのような価値や変革をもたらすか"
                   className="w-full p-2 border rounded text-sm focus:ring-1 focus:outline-none focus:ring-blue-500"
@@ -78,6 +143,7 @@ export function ProjectPlanPage() {
                     Target Market
                   </label>
                   <textarea
+                    {...register("target_market")}
                     rows={3}
                     placeholder="どの市場・どの領域を狙うか"
                     className="w-full p-2 border rounded text-sm focus:ring-1 focus:outline-none focus:ring-blue-500"
@@ -89,6 +155,7 @@ export function ProjectPlanPage() {
                     Target Client
                   </label>
                   <textarea
+                    {...register("target_client")}
                     rows={3}
                     placeholder="具体的な顧客像は"
                     className="w-full p-2 border rounded text-sm focus:ring-1 focus:outline-none focus:ring-blue-500"
@@ -107,6 +174,7 @@ export function ProjectPlanPage() {
                 重要業績評価指標
               </label>
               <textarea
+                {...register("kpis")}
                 rows={3}
                 placeholder="売上意外に追うべき指標（例：提案量、歩留率、単価、獲得数 etc...）"
                 className="w-full p-2 border rounded text-sm focus:ring-1 focus:outline-none focus:ring-blue-500"

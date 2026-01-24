@@ -17,8 +17,12 @@ export type Project = {
   theme_id?: string;
   name: string;
   description?: string;
-  project_type: ProjectType | string;
   attributes: JsonObject;
+  project_type: ProjectType | string;
+  target_market?: string;
+  value_prop?: string;
+  target_client?: string;
+  kpis?: string;
   is_active: boolean;
   owner_id?: string;
   created_by?: string;
@@ -49,7 +53,7 @@ export type UpdateProjectPayload = {
   attributes?: JsonObject;
   type?: ProjectType;
   target_market?: string;
-  value_porp?: string;
+  value_prop?: string;
   target_client?: string;
   kpis?: string;
   is_active?: boolean;
