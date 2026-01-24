@@ -136,7 +136,8 @@ impl ProjectRepository for ProjectRepositoryImpl {
                 kpis = COALESCE($9, kpis),
                 is_active = COALESCE($10, is_active),
                 owner_id = COALESCE($11, owner_id),
-                updated_by = $12            
+                updated_by = $12,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = $13
             RETURNING
                 id, 

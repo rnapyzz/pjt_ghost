@@ -103,7 +103,8 @@ impl JobRepository for JobRepositoryImpl {
             description = COALESCE($5, description),
             status = COALESCE($6, status),
             owner_id = COALESCE($7, owner_id),
-            updated_by = $8
+            updated_by = $8,
+            updated_at = CURRENT_TIMESTAMP
         WHERE id = $9
         RETURNING *
         "#,
