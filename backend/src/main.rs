@@ -99,6 +99,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/jobs", get(handlers::job::list_jobs))
         .route("/jobs", post(handlers::job::create_job))
         .route("/jobs/{jid}", get(handlers::job::get_job))
+        .route("/jobs/{jid}", patch(handlers::job::update_job))
+        .route("/jobs/{jid}", delete(handlers::job::delete_job))
         .route("/me", get(handlers::auth::get_current_user))
         .layer(cors)
         .with_state(state);

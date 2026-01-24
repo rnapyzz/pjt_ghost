@@ -1,4 +1,5 @@
-import { useJob } from "@/features/jobs/hooks/useJobs";
+import { EditJobDialog } from "@/features/jobs/components/EditJobDialog";
+import { useDeleteJob, useJob } from "@/features/jobs/hooks/useJobs";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { useServices } from "@/features/services/hooks/useServices";
 import { useThemes } from "@/features/themes/hooks/useThemes";
@@ -10,12 +11,19 @@ import {
   FlagTriangleRight,
   FolderKanban,
   Loader2,
+  MoreHorizontal,
+  Pencil,
+  Trash,
 } from "lucide-react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 export function JobDetailPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const { data: job, isLoading } = useJob(jobId || "");
+
+  const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob();
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const { data: services } = useServices();
   const { data: projects } = useProjects();
@@ -24,6 +32,17 @@ export function JobDetailPage() {
   const serviceName = services?.find((s) => s.id === job?.service_id)?.name;
   const projectName = projects?.find((p) => p.id === job?.project_id)?.name;
   const themeName = themes?.find((t) => t.id === job?.theme_id)?.title;
+
+  const handleDelete = () => {
+    if (!job) return;
+    if (
+      window.confirm(
+        "Are you sure you want to delete this job? This action cannotbe undone.",
+      )
+    ) {
+      deleteJob(job.id);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -48,6 +67,42 @@ export function JobDetailPage() {
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back to Matrix
         </Link>
+
+        <div className="flex items-start justify-between">
+          {/* title */}
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-2xl font-semibold text-slate-900">
+              {job.title}
+            </h1>
+            <span
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${job.status === "Completed" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}`}
+            >
+              {job.status}
+            </span>
+          </div>
+
+          {/* buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsEditOpen(true)}
+              className="flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              <Trash className="mr-2 h-4 w-4" />
+              Delete
+            </button>
+            <button className="flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* left */}
@@ -139,6 +194,14 @@ export function JobDetailPage() {
           </div>
         </div>
       </div>
+
+      {isEditOpen && job && (
+        <EditJobDialog
+          job={job}
+          isOpen={true}
+          onClose={() => setIsEditOpen(false)}
+        />
+      )}
     </div>
   );
 }

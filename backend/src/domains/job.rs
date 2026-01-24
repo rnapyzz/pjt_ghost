@@ -36,9 +36,24 @@ pub struct CreateJobParam {
     pub created_by: Uuid,
 }
 
+#[derive(Debug, Clone)]
+pub struct UpdateJobParam {
+    pub service_id: Option<Uuid>,
+    pub project_id: Option<Uuid>,
+    pub theme_id: Option<Uuid>,
+
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub status: Option<String>,
+    pub owner_id: Option<Uuid>,
+    pub updated_by: Uuid,
+}
+
 #[async_trait::async_trait]
 pub trait JobRepository: Send + Sync {
     async fn create(&self, params: CreateJobParam) -> Result<Job, AppError>;
     async fn find_all(&self) -> Result<Vec<Job>, AppError>;
     async fn find_by_id(&self, id: Uuid) -> Result<Option<Job>, AppError>;
+    async fn update(&self, id: Uuid, params: UpdateJobParam) -> Result<Job, AppError>;
+    async fn delete(&self, id: Uuid) -> Result<(), AppError>;
 }
