@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use crate::domains::{
-    job::JobRepository, project::ProjectRepository, segment::SegmentRepository,
-    service::ServiceRepository, theme::ThemeRepository, user::UserRepository,
+    account_item::AccountItemRepository, job::JobRepository, project::ProjectRepository,
+    segment::SegmentRepository, service::ServiceRepository, theme::ThemeRepository,
+    user::UserRepository,
 };
 
 pub mod config;
@@ -21,5 +22,6 @@ pub struct AppState {
     pub segment_repository: Arc<dyn SegmentRepository>,
     pub service_repository: Arc<dyn ServiceRepository>,
     pub job_repository: Arc<dyn JobRepository>,
+    pub account_item_repository: Arc<dyn AccountItemRepository>,
     pub jwt_secret: String,
 }

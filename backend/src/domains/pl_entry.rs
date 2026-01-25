@@ -14,24 +14,6 @@ pub enum Scenario {
     Actual,         // Jobの実績
 }
 
-#[derive(Debug, Clone, PartialEq, Type)]
-#[sqlx(type_name = "account_type", rename_all = "PascalCase")]
-pub enum AccountType {
-    Revenue,
-    CostOfGoodSold,
-    SellingGeneralAdmin,
-}
-
-#[derive(Debug, Clone, FromRow)]
-pub struct AccountItem {
-    pub id: Uuid,
-    pub name: String,
-    pub account_type: AccountType,
-    pub description: Option<String>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
 #[derive(Debug, Clone, FromRow)]
 pub struct PlEntry {
     pub id: Uuid,

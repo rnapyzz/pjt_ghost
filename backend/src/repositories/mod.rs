@@ -1,3 +1,4 @@
+pub mod account_item;
 pub mod job;
 pub mod project;
 pub mod segment;
