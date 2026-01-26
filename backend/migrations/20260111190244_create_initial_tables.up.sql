@@ -112,7 +112,9 @@ CREATE TABLE account_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     account_type account_type NOT NULL,
+    display_order INTEGER NOT NULL DEFAULT 0,
     description TEXT,
+    is_active BOOLEAN NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -147,7 +149,7 @@ CREATE INDEX idx_pl_entries_date ON pl_entries(date);
 
 
 -- 初期データ
-INSERT INTO account_items (name, account_type, description) VALUES
-('売上高', 'Revenue', '営業収益'),
-('売上原価', 'CostOfGoodsSold', '制作費やコンテンツ費や人件費などの売上として提供する役務の価値を直接構成するような費用'),
-('販管費', 'SellingGeneralAdmin', '売上として提供する役務の価値を直接構成するものとはいえない費用');
+INSERT INTO account_items (name, account_type, description, display_order, is_active) VALUES
+('売上高', 'Revenue', '営業収益', 10, true),
+('売上原価', 'CostOfGoodsSold', '制作費やコンテンツ費や人件費などの売上として提供する役務の価値を直接構成するような費用', 20, true),
+('販管費', 'SellingGeneralAdmin', '売上として提供する役務の価値を直接構成するものとはいえない費用', 30, true);

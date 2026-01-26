@@ -16,7 +16,8 @@ use tower_http::cors::CorsLayer;
 use ghost_api::{
     AppState, config, db, handlers,
     repositories::{
-        job::JobRepositoryImpl, project::ProjectRepositoryImpl, segment::SegmentRepositoryImpl,
+        account_item::AccountItemRepositoryImpl, job::JobRepositoryImpl,
+        project::ProjectRepositoryImpl, segment::SegmentRepositoryImpl,
         service::ServiceRepositoryImpl, theme::ThemeRepositoryImpl, user::UserRepositoryImpl,
     },
 };
@@ -46,6 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let segment_repository = SegmentRepositoryImpl::new(pool.clone());
     let service_repository = ServiceRepositoryImpl::new(pool.clone());
     let job_repository = JobRepositoryImpl::new(pool.clone());
+    let account_item_repository = AccountItemRepositoryImpl::new(pool.clone());
 
     let state = AppState {
         user_repository: Arc::new(user_repository),
@@ -54,6 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         segment_repository: Arc::new(segment_repository),
         service_repository: Arc::new(service_repository),
         job_repository: Arc::new(job_repository),
+        account_item_repository: Arc::new(account_item_repository),
         jwt_secret: config.jwt_secret,
     };
 
@@ -104,6 +107,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/jobs/{jid}", get(handlers::job::get_job))
         .route("/jobs/{jid}", patch(handlers::job::update_job))
         .route("/jobs/{jid}", delete(handlers::job::delete_job))
+        .route(
+            "/account-items",
+            get(handlers::account_item::list_account_items),
+        )
         .route("/me", get(handlers::auth::get_current_user))
         .layer(cors)
         .with_state(state);

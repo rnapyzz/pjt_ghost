@@ -1,7 +1,10 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use rust_decimal::Decimal;
+use serde::Deserialize;
 use sqlx::{Type, prelude::FromRow};
 use uuid::Uuid;
+
+use crate::error::AppError;
 
 #[derive(Debug, Clone, PartialEq, Type)]
 #[sqlx(type_name = "scenario_type", rename_all = "PascalCase")]
@@ -12,24 +15,6 @@ pub enum Scenario {
     ExecPlanAdjust, // ExecPlanをProject単位でマージするときの調整額
     JobPlan,        // Job立ち上げ時の初期計画（Project予算の消化）
     Actual,         // Jobの実績
-}
-
-#[derive(Debug, Clone, PartialEq, Type)]
-#[sqlx(type_name = "account_type", rename_all = "PascalCase")]
-pub enum AccountType {
-    Revenue,
-    CostOfGoodSold,
-    SellingGeneralAdmin,
-}
-
-#[derive(Debug, Clone, FromRow)]
-pub struct AccountItem {
-    pub id: Uuid,
-    pub name: String,
-    pub account_type: AccountType,
-    pub description: Option<String>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, FromRow)]
@@ -49,4 +34,29 @@ pub struct PlEntry {
     pub updated_by: Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpsertPlEntryParam {
+    pub account_item_id: Uuid,
+    pub date: NaiveDate,
+    pub amount: Decimal,
+    pub description: Option<String>,
+}
+
+#[async_trait::async_trait]
+pub trait PlEntryRepository: Send + Sync {
+    async fn find_by_project(
+        &self,
+        project_id: Uuid,
+        scenario: Scenario,
+    ) -> Result<Vec<PlEntry>, AppError>;
+
+    async fn bulk_upsert(
+        &self,
+        project_id: Uuid,
+        scenario: Scenario,
+        entries: Vec<UpsertPlEntryParam>,
+        user_id: Uuid,
+    ) -> Result<(), AppError>;
 }
